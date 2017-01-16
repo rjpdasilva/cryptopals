@@ -1,6 +1,7 @@
 """Cryptopals Challenges: Auxiliary/utility functions."""
 
 import base64
+from Crypto.Util.strxor import strxor
 
 def hexstr2bytes(s):
     """Convert an hex string to a byte array."""
@@ -103,4 +104,36 @@ def bytes2base64bytes(b):
         raise
 
     return b64
+
+def xor(src, key):
+    """Create a byte array resulting from b XOR k."""
+
+    len_src = len(src)
+    len_key = len(key)
+
+    try:
+        if not len_src:
+            raise Exception("Invalid src for xor: Empty")
+        if not len_key:
+            raise Exception("Invalid key for xor: Empty")
+
+        # Make key size equal the src size:
+        #  + Truncate key if larger than src.
+        #  + Extend key, repeating its pattern till it reaches src size.
+        if len_key >= len_src:
+            new_key = key[:len_src]
+        else:
+            new_key = key * (len_src // len_key) + key[:((len_src % len_key))]
+
+        xor_b = strxor(src, new_key)
+    except TypeError:
+        raise Exception("Invalid types for xor")
+    except ValueError:
+        raise Exception("Invalid values for xor")
+    except Exception:
+        raise
+    except:
+        raise
+
+    return xor_b
 
