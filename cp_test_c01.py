@@ -21,17 +21,24 @@ if __name__ == '__main__':
         in_str = '49276d206b696c6c696e6720796f757220627261696e206c696b65206120706f69736f6e6f7573206d757368726f6f6d'
         out_str_ok = 'SSdtIGtpbGxpbmcgeW91ciBicmFpbiBsaWtlIGEgcG9pc29ub3VzIG11c2hyb29t'
         out_str = execute_hex2base64(in_str)
+        print("{0}: ".format(me) + "-" * 60)
         print("{0}: in       = [{1}]".format(me, in_str))
         print("{0}: result   = [{1}]".format(me, out_str))
         print("{0}: expected = [{1}]".format(me, out_str_ok))
         if out_str != out_str_ok:
-            err_str = "\n{0}: TEST     = [FAILED] Result doesn't match expected.".format(me)
+            err_str = "\n{0}: ".format(me) + "-" * 60
+            err_str += "\n{0}: TEST     = [FAILED] Result doesn't match expected.".format(me)
+            err_str += "\n{0}: ".format(me) + "-" * 60
             raise Exception(err_str)
+        print("{0}: ".format(me) + "-" * 60)
         print("{0}: TEST     = [OK]".format(me))
+        print("{0}: ".format(me) + "-" * 60)
     except Exception:
+        print("{0}: ".format(me) + "-" * 60)
         print("{0}: Caught ERROR EXCEPTION:".format(me))
         raise
     except:
+        print("{0}: ".format(me) + "-" * 60)
         print("{0}: Caught UNEXPECTED EXCEPTION:".format(me))
         raise
 
