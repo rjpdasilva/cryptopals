@@ -217,3 +217,17 @@ def score_english_string(s):
 
     return score
 
+def file_get_lines(fn):
+    """Generate normalized lines read from a file."""
+    with open(fn) as f:
+        # Remove one trailing '\n' from the line, if it's there.
+        for line in f:
+            if line[-1] == '\n':
+                line = line[:-1]
+            yield line
+
+def file_get(fn):
+    """Read a whole file in."""
+    with open(fn) as f:
+        return f.read()
+

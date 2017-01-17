@@ -9,15 +9,6 @@ title = "Challenge 04: Detect single-character XOR"
 def execute_find_single_byte_xor(file_name):
     """Find a message encrypted with single-byte xor in a file."""
 
-    def file_get_lines(fn):
-        """Generate normalized lines read from a file."""
-        with open(fn) as f:
-            # Remove one trailing '\n' from the line, if it's there.
-            for line in f:
-                if line[-1] == '\n':
-                    line = line[:-1]
-                yield line
-
     def high_score(line_idx):
         """Get the score associated with a line index."""
         # 'line_idx' is index of decrypted and scored line, which
@@ -26,7 +17,7 @@ def execute_find_single_byte_xor(file_name):
         return lines_decr_scored[line_idx][2]
 
     # Get the file lines.
-    lines = file_get_lines(file_name)
+    lines = utils.file_get_lines(file_name)
 
     # Get the list of decrypted and scored lines.
     # Using Challenge 3 functionality.
