@@ -4,8 +4,13 @@ import sys
 import cp_aux_utils as utils
 import cp_test_c03 as c3
 
+title = "Challenge 04: Detect single-character XOR"
+
 def execute_find_single_byte_xor(file_name):
+    """Find a message encrypted with single-byte xor in a file."""
+
     def file_get_lines(fn):
+        """Generate normalized lines read from a file."""
         with open(fn) as f:
             # Remove one trailing '\n' from the line, if it's there.
             for line in f:
@@ -14,8 +19,10 @@ def execute_find_single_byte_xor(file_name):
                 yield line
 
     def high_score(line_idx):
-        # 'line_idx' is index of decrypted and scored line tuple
-        # (key, decrypted byte arrary and score).
+        """Get the score associated with a line index."""
+        # 'line_idx' is index of decrypted and scored line, which
+        # is represented by a (key, decrypted byte array, score)
+        # tuple.
         return lines_decr_scored[line_idx][2]
 
     # Get the file lines.
@@ -42,6 +49,8 @@ if __name__ == '__main__':
         in_file = 'data_c4.txt'
         out_res = execute_find_single_byte_xor(in_file)
         out_res_exp = (171, 53, "Now that the party is jumping\n")
+        print("{0}: ".format(me) + "-" * 60)
+        print("{0}: {1}".format(me, title))
         print("{0}: ".format(me) + "-" * 60)
         print("{0}: in_file  = [{1}]".format(me, in_file))
         print("{0}: result   = [(line={1}, key={2}/0x{2:02x}, msg=\"{3}\")], score = [{4:.3f}]"

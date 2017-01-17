@@ -3,7 +3,11 @@
 import sys
 import cp_aux_utils as utils
 
+title = "Challenge 01: Convert hex to base64"
+
 def execute_hex2base64(hex_str):
+    """Convert an hex encoded string to a base64 encoded string."""
+
     # Convert to byte array.
     b = utils.hexstr2bytes(hex_str)
 
@@ -21,6 +25,8 @@ if __name__ == '__main__':
         in_str = '49276d206b696c6c696e6720796f757220627261696e206c696b65206120706f69736f6e6f7573206d757368726f6f6d'
         out_str_ok = 'SSdtIGtpbGxpbmcgeW91ciBicmFpbiBsaWtlIGEgcG9pc29ub3VzIG11c2hyb29t'
         out_str = execute_hex2base64(in_str)
+        print("{0}: ".format(me) + "-" * 60)
+        print("{0}: {1}".format(me, title))
         print("{0}: ".format(me) + "-" * 60)
         print("{0}: in       = [{1}]".format(me, in_str))
         print("{0}: result   = [{1}]".format(me, out_str))

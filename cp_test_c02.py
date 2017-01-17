@@ -3,7 +3,11 @@
 import sys
 import cp_aux_utils as utils
 
+title = "Challenge 02: Fixed XOR"
+
 def execute_xor(src_hex_str, key_hex_str):
+    """Return an hex encoded string of the XOR between two hex encoded strings"""
+
     # Convert to byte array.
     src_b = utils.hexstr2bytes(src_hex_str)
     key_b = utils.hexstr2bytes(key_hex_str)
@@ -23,6 +27,8 @@ if __name__ == '__main__':
         in_key_str = '686974207468652062756c6c277320657965'
         out_str_ok = '746865206b696420646f6e277420706c6179'
         out_str = execute_xor(in_src_str, in_key_str)
+        print("{0}: ".format(me) + "-" * 60)
+        print("{0}: {1}".format(me, title))
         print("{0}: ".format(me) + "-" * 60)
         print("{0}: in_src   = [{1}]".format(me, in_src_str))
         print("{0}: in_key   = [{1}]".format(me, in_key_str))

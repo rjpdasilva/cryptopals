@@ -178,7 +178,7 @@ with open("english_words.txt") as word_file:
 
 def score_english_string_freq(s):
     """Score an English string using character frequency."""
-    # Make verything lowercase.
+    # Make everything lowercase.
     s_low_chars = [chr(c).lower() for c in s]
     # Score is the sum of the each letter score (frequency).
     # Chars not in the table are not accounted for in the score.
@@ -216,3 +216,4 @@ def score_english_string(s):
     score += score_english_string_freq(s)
 
     return score
+

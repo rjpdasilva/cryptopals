@@ -3,11 +3,18 @@
 import sys
 import cp_aux_utils as utils
 
+title = "Challenge 03: Single-byte XOR cipher"
+
 def execute_break_single_byte_xor(hex_str):
+    """Decrypt an hex encoded string ciphered with single-byte xor."""
+
     def score_decr(decr):
+        """Score an English string provided as a byte array."""
         # 'decr' is a decrypted byte array to score.
         return utils.score_english_string(decr)
+
     def high_score(decr_scored):
+        """Get the score associated with a (key, decrypted_msg, score) tuple."""
         # 'decr_scored' is a tuple with the key, the decrypted byte array and the score.
         return decr_scored[2]
 
@@ -34,6 +41,8 @@ if __name__ == '__main__':
         in_str = '1b37373331363f78151b7f2b783431333d78397828372d363c78373e783a393b3736'
         out_res = execute_break_single_byte_xor(in_str)
         out_res_exp = (88, "Cooking MC's like a pound of bacon")
+        print("{0}: ".format(me) + "-" * 60)
+        print("{0}: {1}".format(me, title))
         print("{0}: ".format(me) + "-" * 60)
         print("{0}: in_str   = [{1}]".format(me, in_str))
         print("{0}: result   = [(key={1}/0x{1:02x}, msg=\"{2}\")], score = [{3:.3f}]"
