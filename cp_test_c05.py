@@ -33,7 +33,7 @@ if __name__ == '__main__':
         print("{0}: ".format(me) + "-" * 60)
         print("{0}: in_file  = [{1}]".format(me, in_file))
         print("{0}: result   = [{1}]".format(me, out_res))
-        print("{0}: result   = [{1}]".format(me, out_res_ok))
+        print("{0}: expected = [{1}]".format(me, out_res_ok))
         if out_res != out_res_ok:
             err_str = "\n{0}: ".format(me) + "-" * 60
             err_str += "\n{0}: TEST     = [FAILED] Result doesn't match expected.".format(me)
