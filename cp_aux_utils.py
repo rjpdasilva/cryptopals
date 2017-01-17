@@ -72,7 +72,7 @@ def bytes2rawstr(b):
     try:
         if not len(b):
             raise Exception("Invalid byte array: Empty")
-        s = b.decode("utf-8")
+        s = b.decode("utf-8", "backslashreplace")
     except TypeError:
         raise Exception("Invalid byte array: Not a byte array")
     except ValueError:
