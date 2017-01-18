@@ -5,7 +5,7 @@ import cp_aux_utils as utils
 
 title = "Challenge 03: Single-byte XOR cipher"
 
-def execute_break_single_byte_xor(hex_str):
+def execute_break_single_byte_xor(str, in_hex = True, out_raw = True):
     """Decrypt an hex encoded string ciphered with single-byte xor."""
 
     def score_decr(decr):
@@ -19,7 +19,10 @@ def execute_break_single_byte_xor(hex_str):
         return decr_scored[2]
 
     # Convert to byte array.
-    src_b = utils.hexstr2bytes(hex_str)
+    if in_hex:
+        src_b = utils.hexstr2bytes(str)
+    else:
+        src_b = str
 
     # List all the keys and respective xor decrypted byte array.
     list_decr = [(k, utils.xor(src_b, bytes([k]))) for k in range(256)]
@@ -30,8 +33,9 @@ def execute_break_single_byte_xor(hex_str):
     # Get the high scoring decrypted byte array.
     res = max(list_decr_scored, key = high_score)
 
-    # Convert decrypted message to raw string.
-    res = (res[0], utils.bytes2rawstr(res[1]), res[2])
+    # Convert decrypted message to required format.
+    if out_raw:
+        res = (res[0], utils.bytes2rawstr(res[1]), res[2])
 
     return res
 

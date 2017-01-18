@@ -5,22 +5,30 @@ import cp_aux_utils as utils
 
 title = "Challenge 02: Fixed XOR"
 
-def execute_xor(src_str, key_str, is_hex = True):
-    """Return an hex encoded string of the XOR between two strings."""
+def execute_xor(src_str, key_str, in_fmt = "hex", out_fmt = "hex"):
+    """Return string with the XOR between two strings."""
 
     # Convert to byte array.
-    if is_hex:
+    if in_fmt == "hex":
         src_b = utils.hexstr2bytes(src_str)
         key_b = utils.hexstr2bytes(key_str)
-    else:
+    elif in_fmt == "raw":
         src_b = utils.rawstr2bytes(src_str)
         key_b = utils.rawstr2bytes(key_str)
+    else: # in_fmt == "bytes"
+        src_b = src_str
+        key_b = key_str
 
     # Do the xor.
     xor_b = utils.xor(src_b, key_b)
 
     # Convert to raw string.
-    xor_str = utils.bytes2hexstr(xor_b)
+    if out_fmt == "hex":
+        xor_str = utils.bytes2hexstr(xor_b)
+    elif out_fmt == "raw":
+        xor_str = utils.bytes2rawstr(xor_b)
+    else: # out_fmt == "bytes"
+        xor_str = xor_b
 
     return xor_str
 

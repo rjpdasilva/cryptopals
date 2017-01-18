@@ -17,7 +17,7 @@ def execute_encrypt_repeating_key_xor(file_name, key):
         data = data[:-1]
 
     # Encrypt the data (reuse challenge 2 xor func).
-    data_encr = c2.execute_xor(data, key, is_hex = False)
+    data_encr = c2.execute_xor(data, key, in_fmt = "raw")
 
     return data_encr
 

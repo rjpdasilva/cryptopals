@@ -106,6 +106,26 @@ def bytes2base64bytes(b):
 
     return b64
 
+def base64bytes2bytes(b64):
+    """Convert a base64 encoded byte array to a decoded byte array."""
+
+    b = b''
+
+    try:
+        if not len(b64):
+            raise Exception("Invalid base64 byte array: Empty")
+        b = base64.b64decode(b64)
+    except TypeError:
+        raise Exception("Invalid base64 byte array: Not a byte array")
+    except ValueError:
+        raise Exception("Invalid base64 byte array: Not a valid byte array")
+    except Exception:
+        raise
+    except:
+        raise
+
+    return b
+
 def xor(src, key):
     """Create a byte array resulting from b XOR k."""
 
@@ -137,6 +157,29 @@ def xor(src, key):
         raise
 
     return xor_b
+
+def count_bits_1_bin(val):
+    """Count the number of bits present in one integer."""
+
+    nbits = bin(val).count('1')
+
+    return nbits
+
+def count_bits_1(src):
+    """Count the number of bits present in a byte array."""
+
+    nbits = sum([count_bits_1_bin(byte) for byte in src])
+
+    return nbits
+
+def hamming_dist(src, key):
+    """Calculate hamming distance between 2 byte arrays."""
+
+    # It's the number of '1' bits after xor'ing both operands.
+    xor_b = xor(src, key)
+    dist = count_bits_1(xor_b)
+
+    return dist
 
 # Python dictionary with an English letters statistical frequency.
 # Data from: https://en.wikipedia.org/wiki/Letter_frequency.
