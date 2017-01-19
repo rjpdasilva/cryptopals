@@ -2,7 +2,6 @@
 
 import sys
 import cp_aux_utils as utils
-import cp_test_c03 as c3
 
 title = "Challenge 04: Detect single-character XOR"
 
@@ -13,8 +12,7 @@ def execute_find_single_byte_xor(file_name):
     lines = utils.file_get_lines(file_name)
 
     # Get the list of decrypted and scored lines.
-    # Using Challenge 3 functionality.
-    lines_decr_scored = [c3.execute_break_single_byte_xor(l) for l in lines]
+    lines_decr_scored = [utils.break_single_byte_xor(l) for l in lines]
 
     # Get index of the high scoring decrypted line.
     sort_key = (lambda line_idx: lines_decr_scored[line_idx][2])

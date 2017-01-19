@@ -2,7 +2,6 @@
 
 import sys
 import cp_aux_utils as utils
-import cp_test_c02 as c2
 
 title = "Challenge 05: Implement repeating-key XOR"
 
@@ -16,8 +15,8 @@ def execute_encrypt_repeating_key_xor(file_name, key):
     if data[-1] == '\n':
         data = data[:-1]
 
-    # Encrypt the data (reuse challenge 2 xor func).
-    data_encr = c2.execute_xor(data, key, in_fmt = "raw")
+    # Encrypt the data.
+    data_encr = utils.xor(data, key, in_fmt = "raw", out_fmt = "hex")
 
     return data_encr
 

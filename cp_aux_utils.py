@@ -126,8 +126,19 @@ def base64bytes2bytes(b64):
 
     return b
 
-def xor(src, key):
-    """Create a byte array resulting from b XOR k."""
+def xor(src_str, key_str, in_fmt = "bytes", out_fmt = "bytes"):
+    """Perform <src> XOR <key>. The <key> is processed to match <src> size"""
+
+    # Convert to byte array.
+    if in_fmt == "hex":
+        src = hexstr2bytes(src_str)
+        key = hexstr2bytes(key_str)
+    elif in_fmt == "raw":
+        src = rawstr2bytes(src_str)
+        key = rawstr2bytes(key_str)
+    else: # in_fmt == "bytes"
+        src = src_str
+        key = key_str
 
     len_src = len(src)
     len_key = len(key)
@@ -156,7 +167,45 @@ def xor(src, key):
     except:
         raise
 
-    return xor_b
+    # Convert to required format.
+    if out_fmt == "hex":
+        xor_r = bytes2hexstr(xor_b)
+    elif out_fmt == "raw":
+        xor_r = bytes2rawstr(xor_b)
+    else: # out_fmt == "bytes"
+        xor_r = xor_b
+
+    return xor_r
+
+def break_single_byte_xor(str, in_hex = True, out_raw = True):
+    """Decrypt an hex encoded string ciphered with single-byte xor."""
+
+    def score_decr(decr):
+        """Score an English string provided as a byte array."""
+        # 'decr' is a decrypted byte array to score.
+        return score_english_string(decr)
+
+    # Convert to byte array.
+    if in_hex:
+        src_b = hexstr2bytes(str)
+    else:
+        src_b = str
+
+    # List all the keys and respective xor decrypted byte array.
+    list_decr = [(k, xor(src_b, bytes([k]))) for k in range(256)]
+
+    # Add the score to each decrypted byte array.
+    list_decr_scored = [(i[0], i[1], score_decr(i[1])) for i in list_decr]
+
+    # Get the high scoring decrypted byte array.
+    sort_key = (lambda decr_scored: decr_scored[2])
+    res = max(list_decr_scored, key = sort_key)
+
+    # Convert decrypted message to required format.
+    if out_raw:
+        res = (res[0], bytes2rawstr(res[1]), res[2])
+
+    return res
 
 def count_bits_1_bin(val):
     """Count the number of bits present in one integer."""
@@ -273,4 +322,18 @@ def file_get(fn):
     """Read a whole file in."""
     with open(fn) as f:
         return f.read()
+
+def file_get_ciphertext_base64(file_name):
+    """Get the ciphertext from a base64 encoded file."""
+
+    # Get the file data.
+    text = file_get(file_name)
+
+    # Convert to byte array.
+    text_b = rawstr2bytes(text)
+
+    # Base64 decode it.
+    ct_b = base64bytes2bytes(text_b)
+
+    return ct_b
 

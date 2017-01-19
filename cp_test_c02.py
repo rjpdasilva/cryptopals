@@ -8,29 +8,8 @@ title = "Challenge 02: Fixed XOR"
 def execute_xor(src_str, key_str, in_fmt = "hex", out_fmt = "hex"):
     """Return string with the XOR between two strings."""
 
-    # Convert to byte array.
-    if in_fmt == "hex":
-        src_b = utils.hexstr2bytes(src_str)
-        key_b = utils.hexstr2bytes(key_str)
-    elif in_fmt == "raw":
-        src_b = utils.rawstr2bytes(src_str)
-        key_b = utils.rawstr2bytes(key_str)
-    else: # in_fmt == "bytes"
-        src_b = src_str
-        key_b = key_str
-
-    # Do the xor.
-    xor_b = utils.xor(src_b, key_b)
-
-    # Convert to raw string.
-    if out_fmt == "hex":
-        xor_str = utils.bytes2hexstr(xor_b)
-    elif out_fmt == "raw":
-        xor_str = utils.bytes2rawstr(xor_b)
-    else: # out_fmt == "bytes"
-        xor_str = xor_b
-
-    return xor_str
+    # Just use the utility function.
+    return utils.xor(src_str, key_str, in_fmt = "hex", out_fmt = "hex")
 
 if __name__ == '__main__':
     try:

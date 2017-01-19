@@ -2,8 +2,6 @@
 
 import sys
 import cp_aux_utils as utils
-import cp_test_c02 as c2
-import cp_test_c03 as c3
 
 title = "Challenge 06: Break repeating-key XOR"
 
@@ -15,21 +13,6 @@ def debug_msg(*args, **kwargs):
     if not debug:
         return
     print(*args, **kwargs)
-
-def get_ciphertext(file_name):
-    """Get the ciphertext from a base64 encoded file."""
-
-    # Get the file data.
-    text_b64 = utils.file_get(file_name)
-
-    # Convert to byte array.
-    text_b64_b = utils.rawstr2bytes(text_b64)
-
-    # Base64 decode it. Results in the cyphertext (ct).
-    ct = utils.base64bytes2bytes(text_b64_b)
-
-    return ct
-
 
 def break_key_size(ct, sz_min, sz_max, nb):
     """List probable key sizes and normalized distances, sorted by distance."""
@@ -100,8 +83,7 @@ def break_key(ct, key_size):
     #  byte for that block.
     #  Put them together and you have the key."
 
-    # Reusing challenge 3 functionality.
-    fn = c3.execute_break_single_byte_xor
+    fn = utils.break_single_byte_xor
     ct_blks_tr_k = [fn(ct_blks_tr[n], False, False) for n in range(len(ct_blks_tr))]
 
     # Build the key by concatenating each single-bytes xor.
@@ -124,7 +106,7 @@ def execute_break_repeating_key_xor(file_name):
     # Build the ciphertext.
     ########################################
 
-    ct = get_ciphertext(file_name)
+    ct = utils.file_get_ciphertext_base64(file_name)
 
     ########################################
     # Determine the probable key sizes.
@@ -185,8 +167,7 @@ def execute_break_repeating_key_xor(file_name):
     ########################################
 
     key = key_scores[0][2]
-    # Reuse challenge 2 functionality.
-    plaintext = c2.execute_xor(ct, key, in_fmt = "bytes", out_fmt = "raw")
+    plaintext = utils.xor(ct, key, in_fmt = "bytes", out_fmt = "raw")
 
     # Debug.
     debug_msg("")
