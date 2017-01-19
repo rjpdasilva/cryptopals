@@ -16,7 +16,6 @@ def execute_decrypt_aes_ecb(file_name, key):
 
     # Decrypt.
     plaintext = utils.aes_decrypt(ct, key_b, mode = "ECB")
-    print(plaintext)
 
     return utils.bytes2rawstr(plaintext)
 
