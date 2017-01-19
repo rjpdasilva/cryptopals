@@ -13,11 +13,6 @@ def execute_break_single_byte_xor(str, in_hex = True, out_raw = True):
         # 'decr' is a decrypted byte array to score.
         return utils.score_english_string(decr)
 
-    def high_score(decr_scored):
-        """Get the score associated with a (key, decrypted_msg, score) tuple."""
-        # 'decr_scored' is a tuple with the key, the decrypted byte array and the score.
-        return decr_scored[2]
-
     # Convert to byte array.
     if in_hex:
         src_b = utils.hexstr2bytes(str)
@@ -31,7 +26,8 @@ def execute_break_single_byte_xor(str, in_hex = True, out_raw = True):
     list_decr_scored = [(i[0], i[1], score_decr(i[1])) for i in list_decr]
 
     # Get the high scoring decrypted byte array.
-    res = max(list_decr_scored, key = high_score)
+    sort_key = (lambda decr_scored: decr_scored[2])
+    res = max(list_decr_scored, key = sort_key)
 
     # Convert decrypted message to required format.
     if out_raw:

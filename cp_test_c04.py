@@ -9,13 +9,6 @@ title = "Challenge 04: Detect single-character XOR"
 def execute_find_single_byte_xor(file_name):
     """Find a message encrypted with single-byte xor in a file."""
 
-    def high_score(line_idx):
-        """Get the score associated with a line index."""
-        # 'line_idx' is index of decrypted and scored line, which
-        # is represented by a (key, decrypted byte array, score)
-        # tuple.
-        return lines_decr_scored[line_idx][2]
-
     # Get the file lines.
     lines = utils.file_get_lines(file_name)
 
@@ -24,7 +17,8 @@ def execute_find_single_byte_xor(file_name):
     lines_decr_scored = [c3.execute_break_single_byte_xor(l) for l in lines]
 
     # Get index of the high scoring decrypted line.
-    line_high_score = max(range(len(lines_decr_scored)), key = high_score)
+    sort_key = (lambda line_idx: lines_decr_scored[line_idx][2])
+    line_high_score = max(range(len(lines_decr_scored)), key = sort_key)
 
     # Include the line number in the result.
     res = (line_high_score + 1,

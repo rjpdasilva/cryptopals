@@ -45,7 +45,8 @@ def execute_detect_aes_ecb(file_name):
     scores = [(i, l, find_repetitions(l, bs)) for i, l in enumerate(lines, start = 1)]
 
     # Get the highest scored line.
-    high_score = max(scores, key = (lambda s: s[2]))
+    sort_key = (lambda s: s[2])
+    high_score = max(scores, key = sort_key)
 
     return high_score
 

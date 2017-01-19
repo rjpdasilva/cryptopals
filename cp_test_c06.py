@@ -34,12 +34,6 @@ def get_ciphertext(file_name):
 def break_key_size(ct, sz_min, sz_max, nb):
     """List probable key sizes and normalized distances, sorted by distance."""
 
-    def distance_key(dist):
-        """Key for sorting (key_size, hamming_distance) tuples by distance."""
-
-        # Use the Hamming distance as key  for sorting.
-        return dist[1]
-
     def dist_calc(ct, key_size, nblks):
         """Calculate average Hamming distance between the 1st 'nblks' of 'key_size' size."""
 
@@ -74,8 +68,9 @@ def break_key_size(ct, sz_min, sz_max, nb):
     # The number of 1st blocks to use is determined by 'nb'.
 
     # Do the calculations and return a sorted list of key sizes and distances.
+    sort_key = (lambda dist: dist[1])
     sz_and_dist = sorted([(key_size, dist_calc(ct, key_size, nb))
-                            for key_size in range(sz_min, sz_max + 1)], key = distance_key)
+                            for key_size in range(sz_min, sz_max + 1)], key = sort_key)
     return sz_and_dist
 
 def break_key(ct, key_size):
@@ -125,12 +120,6 @@ def break_key(ct, key_size):
 def execute_break_repeating_key_xor(file_name):
     """Break file's data encrypted with repeating-key xor and base64 encoded."""
 
-    def score_key(dist):
-        """Key for sorting (key_size, key_score, key) tuples by key_score."""
-
-        # Use the Hamming distance as key  for sorting.
-        return dist[1]
-
     ########################################
     # Build the ciphertext.
     ########################################
@@ -175,8 +164,9 @@ def execute_break_repeating_key_xor(file_name):
     # For each key size, break the key and get a score.
     # This builds up a list of 'num_sz_used' (key_size, key_score, key) tuples,
     # sorted by decreasing score.
+    sort_key = (lambda dist: dist[1])
     key_scores = sorted([break_key(ct, sz_and_dist[i][0])
-                            for i in range(num_sz_used)], key = score_key, reverse = True)
+                            for i in range(num_sz_used)], key = sort_key, reverse = True)
 
     # Debug.
     debug_msg("")
