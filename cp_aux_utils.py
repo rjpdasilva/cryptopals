@@ -1,8 +1,9 @@
 """Cryptopals Challenges: Auxiliary/utility functions."""
 
 import base64
-from Crypto.Util.strxor import strxor
 import string
+from Crypto.Util.strxor import strxor
+from Crypto.Cipher import AES
 
 def hexstr2bytes(s):
     """Convert an hex string to a byte array."""
@@ -229,6 +230,19 @@ def hamming_dist(src, key):
     dist = count_bits_1(xor_b)
 
     return dist
+
+def aes_decrypt(cipher, key, mode = "ECB"):
+    """Decrypt cipher with key, using AES in specified mode."""
+    if mode == "ECB":
+        aes_mode = AES.MODE_ECB
+    else:
+        raise Exception("Invalid AES mode for decryption.")
+
+    crypto = AES.new(key, aes_mode)
+    plain = crypto.decrypt(cipher)
+
+    return plain
+
 
 # Python dictionary with an English letters statistical frequency.
 # Data from: https://en.wikipedia.org/wiki/Letter_frequency.

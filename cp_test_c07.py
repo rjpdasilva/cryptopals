@@ -2,7 +2,6 @@
 
 import sys
 import cp_aux_utils as utils
-from Crypto.Cipher import AES
 
 title = "Challenge 07: AES in ECB mode"
 
@@ -16,8 +15,7 @@ def execute_decrypt_aes_ecb(file_name, key):
     key_b = utils.rawstr2bytes(key)
 
     # Decrypt.
-    crypto = AES.new(key_b, AES.MODE_ECB)
-    plaintext = crypto.decrypt(ct)
+    plaintext = utils.aes_decrypt(ct, key_b, mode = "ECB")
     print(plaintext)
 
     return utils.bytes2rawstr(plaintext)
