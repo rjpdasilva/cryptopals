@@ -243,6 +243,31 @@ def aes_decrypt(cipher, key, mode = "ECB"):
 
     return plain
 
+def pkcs7_pad(b, sz):
+    """PKCS#7 pad a byte array to 'sz' bytes."""
+    try:
+        if sz < 2 or sz > 256:
+            raise Exception("Invalid sz for pkcs7_pad")
+        # Determine how many bytes required for padding.
+        # In the case 'len_b' is a multiple of 'sz', PKCS#7 still
+        # required padding of 'sz' bytes.
+        len_b = len(b)
+        if not len_b:
+            raise Exception("Invalid byte array: Empty")
+        pad_len = sz - (len_b % sz)
+        # The byte value used for padding is the pad length.
+        pad_byte = bytes([pad_len])
+        padded_b = b + pad_byte * pad_len
+    except TypeError:
+        raise Exception("Invalid types for pkcs7_pad")
+    except ValueError:
+        raise Exception("Invalid values for pkcs7_pad")
+    except Exception:
+        raise
+    except:
+        raise
+
+    return padded_b
 
 # Python dictionary with an English letters statistical frequency.
 # Data from: https://en.wikipedia.org/wiki/Letter_frequency.
