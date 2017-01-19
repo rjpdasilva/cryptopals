@@ -243,6 +243,49 @@ def aes_decrypt(cipher, key, mode = "ECB"):
 
     return plain
 
+def aes_decrypt_cbc_using_ebc(cipher, key, iv):
+    """Decrypt AES-CBC cipher with key, using AES-ECB and XOR."""
+
+    try:
+        crypto = AES.new(key, AES.MODE_ECB)
+        sz = len(key)
+        if sz != len(iv):
+            raise Exception("Invalid IV: Size not matching key size")
+        # Split ciphertext in blocks.
+        blks = [cipher[n:n + sz] for n in range(0, len(cipher), sz)]
+        # For each cipher block, decrypt it with ECB and then XOR
+        # it with the previous cipher block (or the IV in the for
+        # the 1st cipher block). Put all decrypted blocks together
+        # to have the plaintext.
+        plain = b''
+        cipher_last = iv
+        for i in range(len(blks)):
+            blk_plain = crypto.decrypt(blks[i])
+            plain += xor(blk_plain, cipher_last)
+            cipher_last = blks[i]
+    except TypeError:
+        raise Exception("Invalid types for pkcs7_pad")
+    except ValueError:
+        raise Exception("Invalid values for pkcs7_pad")
+    except Exception:
+        raise
+    except:
+        raise
+
+    return plain
+
+def aes_encrypt(plain, key, mode = "ECB"):
+    """Encrypt plain with key, using AES in specified mode."""
+    if mode == "ECB":
+        aes_mode = AES.MODE_ECB
+    else:
+        raise Exception("Invalid AES mode for decryption.")
+
+    crypto = AES.new(key, aes_mode)
+    cipher = crypto.encrypt(plain)
+
+    return cipher
+
 def pkcs7_pad(b, sz):
     """PKCS#7 pad a byte array to 'sz' bytes."""
     try:
