@@ -259,7 +259,7 @@ def aes_encrypt(plain, key, mode = "ECB", iv = b''):
 
     return cipher
 
-def aes_decrypt_cbc_using_ebc(cipher, key, iv):
+def aes_decrypt_cbc_using_ecb(cipher, key, iv):
     """Decrypt AES-CBC cipher with key, using AES-ECB and XOR."""
 
     try:
@@ -290,7 +290,7 @@ def aes_decrypt_cbc_using_ebc(cipher, key, iv):
 
     return plain
 
-def aes_encrypt_cbc_using_ebc(plain, key, iv):
+def aes_encrypt_cbc_using_ecb(plain, key, iv):
     """Encrypt AES-CBC plaintext with key, using AES-ECB and XOR."""
 
     try:

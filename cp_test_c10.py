@@ -5,14 +5,14 @@ import cp_aux_utils as utils
 
 title = "Challenge 10: Implement CBC mode"
 
-def execute_decrypt_aes_cbc_using_ebc(file_name, key, iv):
+def execute_decrypt_aes_cbc_using_ecb(file_name, key, iv):
     """Descrypt a AES-CBC encrypted and base64 encoded file using a key."""
 
     # Get the ciphertext.
     ct = utils.file_get_ciphertext_base64(file_name)
 
     # Decrypt.
-    plaintext = utils.aes_decrypt_cbc_using_ebc(ct, key, iv)
+    plaintext = utils.aes_decrypt_cbc_using_ecb(ct, key, iv)
 
     # Convert to raw string.
     return utils.bytes2rawstr(plaintext)
@@ -23,7 +23,7 @@ if __name__ == '__main__':
         in_file = "data_c10.txt"
         in_key = b'YELLOW SUBMARINE'
         in_iv = b'\x00' * 16
-        out_res = execute_decrypt_aes_cbc_using_ebc(in_file, in_key, in_iv)
+        out_res = execute_decrypt_aes_cbc_using_ecb(in_file, in_key, in_iv)
         out_file = 'data_c6_out.txt'
         out_res_ok = utils.file_get(out_file)
         # These extra bytes (padding?) are part of the decrypted message.
