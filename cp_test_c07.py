@@ -6,7 +6,7 @@ import cp_aux_utils as utils
 title = "Challenge 07: AES in ECB mode"
 
 def execute_decrypt_aes_ecb(file_name, key):
-    """Descrypt a AES-ECB encrypted and base64 encoded file using a key."""
+    """Decrypt a AES-ECB encrypted and base64 encoded file using a key."""
 
     # Get the ciphertext.
     ct = utils.file_get_ciphertext_base64(file_name)

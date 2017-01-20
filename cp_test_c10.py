@@ -6,7 +6,7 @@ import cp_aux_utils as utils
 title = "Challenge 10: Implement CBC mode"
 
 def execute_decrypt_aes_cbc_using_ecb(file_name, key, iv):
-    """Descrypt a AES-CBC encrypted and base64 encoded file using a key."""
+    """Decrypt a AES-CBC encrypted and base64 encoded file using a key."""
 
     # Get the ciphertext.
     ct = utils.file_get_ciphertext_base64(file_name)
