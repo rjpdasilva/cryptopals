@@ -4,6 +4,7 @@ import base64
 import string
 from Crypto.Util.strxor import strxor
 from Crypto.Cipher import AES
+from Crypto.Random import random
 
 def hexstr2bytes(s):
     """Convert an hex string to a byte array."""
@@ -231,6 +232,25 @@ def hamming_dist(src, key):
 
     return dist
 
+def find_repetitions(s, sz):
+    """Find repetitions of 'sz'-sized blocks of 's' within 's' itself."""
+
+    # Check how many full blocks of 'sz' fit in 's' and split 's'
+    # into those blocks.
+    len_s = len(s)
+    nblks = len_s // sz
+    len_s_align = nblks * sz
+    s_align = s[:len_s_align]
+    s_blks = [s_align[n:n + sz] for n in range(0, len_s_align, sz)]
+
+    # Count how many times each block is repeated in the string.
+    # Do this by comparing all non-repeating combinations of 2
+    # blocks.
+    score = len([1 for i in range(0, nblks - 1) for j in range(i + 1, nblks)
+                    if s_blks[i] == s_blks[j]])
+
+    return score
+
 def aes_decrypt(cipher, key, mode = "ECB", iv = b''):
     """Decrypt cipher with key, using AES in specified mode."""
     if mode == "ECB":
@@ -346,6 +366,16 @@ def pkcs7_pad(b, sz):
         raise
 
     return padded_b
+
+def rand_int(low, high):
+    """Generate random integer 'rnd' where 'low' <= 'rnd' <= 'high'."""
+    return random.randint(low, high)
+
+def rand_bytes(nbytes):
+    """Generate random byte array with maximum of 'nbytes'."""
+    rnd = random.getrandbits(nbytes * 8)
+    rnd_b = rnd.to_bytes(nbytes, byteorder = 'big')
+    return rnd_b
 
 # Python dictionary with an English letters statistical frequency.
 # Data from: https://en.wikipedia.org/wiki/Letter_frequency.
