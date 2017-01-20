@@ -231,17 +231,33 @@ def hamming_dist(src, key):
 
     return dist
 
-def aes_decrypt(cipher, key, mode = "ECB"):
+def aes_decrypt(cipher, key, mode = "ECB", iv = b''):
     """Decrypt cipher with key, using AES in specified mode."""
     if mode == "ECB":
         aes_mode = AES.MODE_ECB
+    elif mode == "CBC":
+        aes_mode = AES.MODE_CBC
     else:
         raise Exception("Invalid AES mode for decryption.")
 
-    crypto = AES.new(key, aes_mode)
+    crypto = AES.new(key, aes_mode, iv)
     plain = crypto.decrypt(cipher)
 
     return plain
+
+def aes_encrypt(plain, key, mode = "ECB", iv = b''):
+    """Encrypt plain with key, using AES in specified mode."""
+    if mode == "ECB":
+        aes_mode = AES.MODE_ECB
+    elif mode == "CBC":
+        aes_mode = AES.MODE_CBC
+    else:
+        raise Exception("Invalid AES mode for decryption.")
+
+    crypto = AES.new(key, aes_mode, iv)
+    cipher = crypto.encrypt(plain)
+
+    return cipher
 
 def aes_decrypt_cbc_using_ebc(cipher, key, iv):
     """Decrypt AES-CBC cipher with key, using AES-ECB and XOR."""
@@ -274,15 +290,34 @@ def aes_decrypt_cbc_using_ebc(cipher, key, iv):
 
     return plain
 
-def aes_encrypt(plain, key, mode = "ECB"):
-    """Encrypt plain with key, using AES in specified mode."""
-    if mode == "ECB":
-        aes_mode = AES.MODE_ECB
-    else:
-        raise Exception("Invalid AES mode for decryption.")
+def aes_encrypt_cbc_using_ebc(plain, key, iv):
+    """Encrypt AES-CBC plaintext with key, using AES-ECB and XOR."""
 
-    crypto = AES.new(key, aes_mode)
-    cipher = crypto.encrypt(plain)
+    try:
+        crypto = AES.new(key, AES.MODE_ECB)
+        sz = len(key)
+        if sz != len(iv):
+            raise Exception("Invalid IV: Size not matching key size")
+        # Split plaintext in blocks.
+        blks = [plain[n:n + sz] for n in range(0, len(plain), sz)]
+        # For each plain block, XOR it with the previous cipher
+        # block (or the IV in the for the 1st plain block) and
+        # then encrypt it with ECB. Put all encrypted blocks
+        # together to have the ciphertext.
+        cipher = b''
+        cipher_last = iv
+        for i in range(len(blks)):
+            blk_plain = xor(blks[i], cipher_last)
+            cipher_last = crypto.encrypt(blk_plain)
+            cipher += cipher_last
+    except TypeError:
+        raise Exception("Invalid types for AES decrypt")
+    except ValueError:
+        raise Exception("Invalid values for AES decrypt")
+    except Exception:
+        raise
+    except:
+        raise
 
     return cipher
 
