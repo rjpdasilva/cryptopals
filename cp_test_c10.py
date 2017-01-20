@@ -24,7 +24,7 @@ if __name__ == '__main__':
         in_key = b'YELLOW SUBMARINE'
         in_iv = b'\x00' * 16
         out_res = execute_decrypt_aes_cbc_using_ecb(in_file, in_key, in_iv)
-        out_file = 'data_c6_out.txt'
+        out_file = 'data_c06_out.txt'
         out_res_ok = utils.file_get(out_file)
         # These extra bytes (padding?) are part of the decrypted message.
         out_res_ok += ("\x04" * 4)

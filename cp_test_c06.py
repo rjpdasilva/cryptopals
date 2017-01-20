@@ -183,9 +183,9 @@ def execute_break_repeating_key_xor(file_name):
 if __name__ == '__main__':
     try:
         me = sys.argv[0]
-        in_file = 'data_c6.txt'
+        in_file = 'data_c06.txt'
         out_res = execute_break_repeating_key_xor(in_file)
-        out_file = 'data_c6_out.txt'
+        out_file = 'data_c06_out.txt'
         out_file_data = utils.file_get(out_file)
         out_res_ok = ("Terminator X: Bring the noise", out_file_data)
         print("{0}: ".format(me) + "-" * 60)

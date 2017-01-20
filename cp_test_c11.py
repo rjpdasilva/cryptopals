@@ -69,7 +69,7 @@ def get_loops():
 if __name__ == '__main__':
     try:
         me = sys.argv[0]
-        in_file = "data_c6_out.txt"
+        in_file = "data_c06_out.txt"
         in_blk_sz = 16
         plaintext = utils.file_get(in_file)
         print("{0}: ".format(me) + "-" * 60)

@@ -22,10 +22,10 @@ def execute_decrypt_aes_ecb(file_name, key):
 if __name__ == '__main__':
     try:
         me = sys.argv[0]
-        in_file = 'data_c7.txt'
+        in_file = 'data_c07.txt'
         in_key = "YELLOW SUBMARINE"
         out_res = execute_decrypt_aes_ecb(in_file, in_key)
-        out_file = 'data_c6_out.txt'
+        out_file = 'data_c06_out.txt'
         out_res_ok = utils.file_get(out_file)
         # These extra bytes (padding?) are part of the decrypted message.
         out_res_ok += ("\x04" * 4)

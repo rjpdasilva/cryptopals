@@ -29,7 +29,7 @@ def execute_find_single_byte_xor(file_name):
 if __name__ == '__main__':
     try:
         me = sys.argv[0]
-        in_file = 'data_c4.txt'
+        in_file = 'data_c04.txt'
         out_res = execute_find_single_byte_xor(in_file)
         out_res_exp = (171, 53, "Now that the party is jumping\n")
         print("{0}: ".format(me) + "-" * 60)
