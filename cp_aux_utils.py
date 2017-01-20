@@ -264,9 +264,9 @@ def aes_decrypt_cbc_using_ebc(cipher, key, iv):
             plain += xor(blk_plain, cipher_last)
             cipher_last = blks[i]
     except TypeError:
-        raise Exception("Invalid types for pkcs7_pad")
+        raise Exception("Invalid types for AES decrypt")
     except ValueError:
-        raise Exception("Invalid values for pkcs7_pad")
+        raise Exception("Invalid values for AES decrypt")
     except Exception:
         raise
     except:
