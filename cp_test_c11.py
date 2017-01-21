@@ -5,8 +5,19 @@ import cp_aux_utils as utils
 
 title = "Challenge 11: An ECB/CBC detection oracle"
 
-def encryption_oracle(pt, blk_sz):
-    """Encryption Oracle: Random encryption modes on plaintext 'pt', block size 'blk_sz'."""
+# An encryption function we can exercise (call), but of
+# which we are not supposed to know the implementation
+# details.
+def encryption_oracle(pt):
+    """Encryption Oracle: Challenge 11."""
+
+    # Uses a key and block size of 16 bytes.
+    # Prepends 5 to 10 random bytes to the plaintext.
+    # Appends 5 to 10 random bytes to the plaintext.
+    # Chooses randomly between AES-ECB and AES-CBC
+    # for encrypting.
+
+    blk_sz = 16
 
     pt_b = utils.rawstr2bytes(pt)
 
@@ -79,7 +90,7 @@ if __name__ == '__main__':
         results = {'ok': 0, 'ko': 0}
         modes = {'ECB': 0, 'CBC': 0}
         for i in range(loops):
-            (out_res_ok, ciphertext) = encryption_oracle(plaintext, in_blk_sz)
+            (out_res_ok, ciphertext) = encryption_oracle(plaintext)
             out_res = execute_detect_ecb_or_cbc(ciphertext, in_blk_sz)
             if out_res == out_res_ok:
                 results['ok'] += 1
