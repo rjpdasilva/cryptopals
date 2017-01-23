@@ -2,7 +2,6 @@
 
 import sys
 import cp_aux_utils as utils
-import cp_test_c12 as c12
 
 title = "Challenge 14: Byte-at-a-time ECB decryption (Harder)"
 
@@ -10,6 +9,8 @@ title = "Challenge 14: Byte-at-a-time ECB decryption (Harder)"
 key_b = None
 # Random constant prefix used in encryption oracle.
 prefix_b = None
+# Prefix is to be used by the oracle.
+use_prefix = True
 
 # Debug flag.
 debug = 0
@@ -33,24 +34,68 @@ def encryption_oracle(pt_b):
     # plaintext.
     # Uses AES-ECB for encrypting.
 
-    # This is basically the same encryption oracle as in
-    # Challenge 12, with the extra of appending some bytes
-    # before the plaintext.
+    # Base64 encoded byte array with suffix used by the
+    # encryption oracle.
+    suffix_b64_b = b'''Um9sbGluJyBpbiBteSA1LjAKV2l0aCBteSByYWctdG9wIGRvd24gc28gbXkg
+aGFpciBjYW4gYmxvdwpUaGUgZ2lybGllcyBvbiBzdGFuZGJ5IHdhdmluZyBq
+dXN0IHRvIHNheSBoaQpEaWQgeW91IHN0b3A/IE5vLCBJIGp1c3QgZHJvdmUg
+YnkK'''
 
+    global key_b
     global prefix_b
+    global use_prefix
+
+    blk_sz = 16
+
+    # Generate a random key.
+    key_sz = blk_sz
+    if key_b is None:
+        key_b = utils.rand_bytes(key_sz)
 
     # Generate a random prefix with (somewhat) random length.
     if prefix_b is None:
-        prefix_sz = utils.rand_int(0, 16 * 4)
+        if use_prefix:
+            prefix_sz = utils.rand_int(0, 16 * 4)
+        else:
+            prefix_sz = 0
         prefix_b = utils.rand_bytes(prefix_sz)
 
     # Build the plaintext (pt).
-    pt_b = prefix_b + pt_b
+    suffix_b = utils.base64bytes2bytes(suffix_b64_b)
+    pt_b = prefix_b + pt_b + suffix_b
+    pt_b = utils.pkcs7_pad(pt_b, blk_sz)
 
-    # Encrypt using Challenge 12 oracle.
-    ct_b = c12.encryption_oracle(pt_b)
+    # Encrypt.
+    ct_b = utils.aes_encrypt(pt_b, key_b, mode = "ECB")
 
     return ct_b
+
+def find_block_size(oracle):
+    """Determines the block size used by the given oracle."""
+
+    # Check the ciphertext size given by the oracle
+    # when no additional data is fed into it.
+    # Then, keep feeding an additional byte till the
+    # returned cipher text size changes.
+    # Since the oracle will be padding the returned
+    # ciphertext to a multiple of the block size, once
+    # the ciphertext size increases, the difference
+    # will be the block size.
+
+    blk_sz = 0
+    pt_b = b''
+    sz = len(oracle(pt_b))
+    sz_init = sz
+    while sz == sz_init:
+        pt_b += bytes([0])
+        sz = len(oracle(pt_b))
+    if sz > sz_init:
+        blk_sz = (sz - sz_init)
+    else:
+        # Unexpected error.
+        raise Exception("Unable to find block size")
+
+    return blk_sz
 
 def find_prefix_size(oracle, blk_sz):
     """Finds the oracle's encryption prefix size."""
@@ -112,6 +157,26 @@ def find_prefix_size(oracle, blk_sz):
     prefix_sz = prefix_sz1 + prefix_bytes
 
     return prefix_sz
+
+def confirm_ecb(oracle, blk_sz, prefix_sz):
+    """Confirm the given oracle is using ECB, provided the block size used by it."""
+
+    # Some initial feeding is required for making sure we
+    # start aligned on a 'blk_sz' boundary, i.e, feed some
+    # initial data to pad the oracle's prefix for block
+    # aligning it.
+    prefix_pad_len = blk_sz - (prefix_sz % blk_sz)
+    prefix_pad_b = b'X' * prefix_pad_len
+    prefix_end = prefix_sz + prefix_pad_len
+
+    # Feeding 2 equal blocks of 'blk_sz' to the oracle
+    # shall also produce 2 equal ciphertext blocks in
+    # the same positions.
+
+    pt_b = prefix_pad_b + bytes([0] * blk_sz * 2)
+    ct_b = oracle(pt_b)
+    if ct_b[prefix_end:(prefix_end + blk_sz)] != ct_b[(prefix_end + blk_sz):(prefix_end + 2 * blk_sz)]:
+        raise Exception("Encryption is not ECB")
 
 def find_next_byte(oracle, blk_sz, prefix_sz, known):
     """Find the next byte of the oracle's secret."""
@@ -183,15 +248,20 @@ def find_next_byte(oracle, blk_sz, prefix_sz, known):
 
     return unknown_byte
 
-def execute_break_ecb(oracle):
+def execute_break_ecb(oracle, with_prefix):
     """Break AES-ECB encrypted msg in oracle's returned ciphertext."""
 
+    global use_prefix
+    use_prefix = with_prefix
+
     # Find the block size.
-    blk_sz = c12.find_block_size(oracle)
+    blk_sz = find_block_size(oracle)
 
     # Find the prefix size.
-    # This is also confirming the encryption uses ECB.
     prefix_sz = find_prefix_size(oracle, blk_sz)
+
+    # Confirm ECB mode.
+    confirm_ecb(oracle, blk_sz, prefix_sz)
 
     # Find the secret.
     suffix_b = b''
@@ -209,7 +279,7 @@ def execute_break_ecb(oracle):
 if __name__ == '__main__':
     try:
         me = sys.argv[0]
-        (out_res, blk_sz, prefix_sz) = execute_break_ecb(encryption_oracle)
+        (out_res, blk_sz, prefix_sz) = execute_break_ecb(encryption_oracle, True)
         out_file = 'data_c12_out.txt'
         out_res_ok = utils.file_get(out_file)
         # Add one padding byte.
