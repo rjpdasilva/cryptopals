@@ -367,6 +367,34 @@ def pkcs7_pad(b, sz):
 
     return padded_b
 
+def pkcs7_unpad(b, sz):
+    """Unpad a PKCS#7 byte array padded to 'sz' bytes."""
+    try:
+        if sz < 2 or sz > 256:
+            raise Exception("Invalid sz for pkcs7_unpad")
+        len_b = len(b)
+        if not len_b:
+            raise Exception("Invalid byte array: Empty")
+        if (len_b) % sz != 0:
+            raise Exception("Invalid byte array: Not padded")
+        num_pad = b[-1]
+        if num_pad > sz or num_pad == 0:
+            raise Exception("Invalid byte array: Incorrect number of pad bytes")
+        pad_bytes = b[-num_pad:]
+        if pad_bytes != bytes([num_pad] * num_pad):
+            raise Exception("Invalid byte array: Incorrect pad bytes content")
+        unpadded_b = b[0:-num_pad]
+    except TypeError:
+        raise Exception("Invalid types for pkcs7_pad")
+    except ValueError:
+        raise Exception("Invalid values for pkcs7_pad")
+    except Exception:
+        raise
+    except:
+        raise
+
+    return unpadded_b
+
 def rand_int(low, high):
     """Generate random integer 'rnd' where 'low' <= 'rnd' <= 'high'."""
     return random.randint(low, high)
