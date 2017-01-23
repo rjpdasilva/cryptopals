@@ -2,7 +2,6 @@
 
 import sys
 import cp_aux_utils as utils
-import cp_test_c11 as c11
 
 title = "Challenge 12: Byte-at-a-time ECB decryption (Simple)"
 
