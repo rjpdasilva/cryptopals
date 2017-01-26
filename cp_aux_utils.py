@@ -341,6 +341,58 @@ def aes_encrypt_cbc_using_ecb(plain, key, iv):
 
     return cipher
 
+# AES-CTR crypto requires maintaining state, so use a class for it.
+class AesCtr:
+    """AES-CTR crypto functionality."""
+
+    def __init__(self, key, nonce, nonce_size = 8, ctr_size = 8, big_endian = False):
+        self._key = key
+        self._nonce = nonce
+        self._nonce_size = nonce_size
+        self._ctr_size = ctr_size
+        self._endian = 'big' if big_endian else 'little'
+        self._ks_bytes = b''
+        self._ctr = 0
+        self._block_size = self._nonce_size + self._ctr_size
+        if self._block_size % 16:
+            raise Exception("AesCtr: nonce + ctr size must be multiple of 16")
+        self._crypto = AES.new(self._key, AES.MODE_ECB)
+
+    def encrypt(self, plaintext):
+        """AES-CTR encrypt function (decrypt is the same)."""
+        pt = plaintext
+        if len(pt) == 0:
+            return b''
+
+        # For the keystream 'ks', start with any remaining unused bytes
+        # from last encrypt/decrypt operation.
+        ks = self._ks_bytes
+        # Generate new keystream blocks for covering the required
+        # plaintext.
+        while len(ks) < len(pt):
+            # Prepare a new key block and append it to keystream.
+            kb_pt = self._nonce.to_bytes(self._nonce_size, self._endian)
+            kb_pt += self._ctr.to_bytes(self._ctr_size, self._endian)
+            kb_ct = self._crypto.encrypt(kb_pt)
+            ks += kb_ct
+            self._ctr += 1
+
+        # Adjust keystream to match plaintext size, while keeping any
+        # exceeding bytes for next encrypt/decrypt operation.
+        if len(ks) > len(pt):
+            self._ks_bytes = ks[len(pt):]
+            ks = ks[:len(pt)]
+
+        # Finally, do the XOR between the plaintext and keystream.
+        ct = strxor(pt, ks)
+
+        return ct
+
+    def decrypt(self, ciphertext):
+        """AES-CTR decrypt function."""
+        # Encrypt/Decrypt is the same process!
+        return self.encrypt(ciphertext)
+
 def pkcs7_pad(b, sz):
     """PKCS#7 pad a byte array to 'sz' bytes."""
     try:
