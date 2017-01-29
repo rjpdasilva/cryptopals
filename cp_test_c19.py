@@ -2,6 +2,7 @@
 
 import sys
 import cp_aux_utils as utils
+import cp_test_c06 as c6
 
 title = "Challenge 19: Break fixed-nonce CTR mode using substitution"
 
@@ -231,6 +232,36 @@ def guess_key_2(ct_b_list, key_sz):
                     # If pt[i] = ' ', then key[i] = ct[i] XOR pt[i] = ct[i] XOR ' '.
                     key[i] = ct1[i] ^ ord(' ')
                     key_score[i] = v
+
+    return key
+
+def guess_key_3(ct_b_list, key_sz):
+    """Third method tried for guessing the key."""
+
+    # Use the repeating key XOR method to guess the 1st 'xor_key_sz'
+    # bytes from the key, where 'xor_key_sz' is size of the smallest
+    # ciphertext.
+    #
+    # Because the nonce is fixed and the same, the key stream acts
+    # exactly as a repeating key XOR process. However, the number of
+    # key stream bytes we can find with this is only the length of
+    # the smallest ciphertext.
+    #
+    # Note that 'guess_key_1()' uses a similar method and can also
+    # just find the first 'N' bytes from the key stream, but in its
+    # case, 'N' can be larger than the smallest ciphertext.
+
+    xor_key_sz = min([len(ct_b) for ct_b in ct_b_list])
+
+    # Concatenate all ciphertexts using 'xor_key_sz' bytes
+    # from each.
+    ct_b_xor = b''.join([ct_b[:xor_key_sz] for ct_b in ct_b_list])
+
+    (key_size, key_score, key_b) = c6.break_key(ct_b_xor, xor_key_sz)
+
+    # Convert key from byte array to list of bytes with None set in the positions
+    # for which we do not have determined a value.
+    key = list(key_b) + [None] * (key_sz - len(key_b))
 
     return key
 
