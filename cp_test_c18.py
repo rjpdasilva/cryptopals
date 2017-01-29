@@ -27,7 +27,7 @@ def execute_ctr_encrypt(s, k, n):
     pt_b = utils.rawstr2bytes(s)
     key_b = utils.rawstr2bytes(k)
 
-    # Get a AES-CTR object to work with for decryption.
+    # Get a AES-CTR object to work with for encryption.
     aes_ctr = utils.AesCtr(key_b, n)
     ct_b = aes_ctr.encrypt(pt_b)
 
