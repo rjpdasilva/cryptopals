@@ -457,6 +457,57 @@ def rand_bytes(nbytes):
     rnd_b = rnd.to_bytes(nbytes, byteorder = 'big')
     return rnd_b
 
+
+
+def _uint32(x):
+    # Get the 32 least significant bits.
+    return int(0xFFFFFFFF & x)
+
+# MT19937: Mersenne Twister Random Number Generator (RNG).
+# https://en.wikipedia.org/wiki/Mersenne_Twister
+class MT19937:
+    """Wikipedia implementation of MT19937 RNG."""
+
+    def __init__(self, seed):
+        # Initialize the index to 0.
+        self._index = 624
+        self._mt = [0] * 624
+        # Initialize the initial state to the seed.
+        self._mt[0] = _uint32(seed)
+        for i in range(1, 624):
+            self._mt[i] = _uint32(1812433253 * (self._mt[i - 1] ^ self._mt[i - 1] >> 30) + i)
+
+    def _twist(self):
+        for i in range(624):
+            # Get the most significant bit and add it to the less significant
+            # bits of the next number.
+            y = _uint32((self._mt[i] & 0x80000000) + (self._mt[(i + 1) % 624] & 0x7fffffff))
+            self._mt[i] = self._mt[(i + 397) % 624] ^ y >> 1
+
+            if y % 2 != 0:
+                self._mt[i] = self._mt[i] ^ 0x9908b0df
+
+        self._index = 0
+
+    def uint32(self):
+        if self._index >= 624:
+            self._twist()
+
+        y = self._mt[self._index]
+
+        # Right shift by 11 bits
+        y = y ^ y >> 11
+        # Shift y left by 7 and take the bitwise and of 2636928640
+        y = y ^ y << 7 & 2636928640
+        # Shift y left by 15 and take the bitwise and of y and 4022730752
+        y = y ^ y << 15 & 4022730752
+        # Right shift by 18 bits
+        y = y ^ y >> 18
+
+        self._index = self._index + 1
+
+        return _uint32(y)
+
 # Python dictionary with an English letters statistical frequency.
 # Data from: https://en.wikipedia.org/wiki/Letter_frequency.
 # Space frequency added.
