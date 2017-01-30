@@ -508,6 +508,10 @@ class MT19937:
 
         return _uint32(y)
 
+    def set_state(self, mt):
+        """Forces a new internal state."""
+        self._mt = mt[:]
+
 # Python dictionary with an English letters statistical frequency.
 # Data from: https://en.wikipedia.org/wiki/Letter_frequency.
 # Space frequency added.
