@@ -2,7 +2,6 @@
 
 import sys
 import cp_aux_utils as utils
-import time
 
 title = "Challenge 23: Clone an MT19937 RNG from its output"
 
