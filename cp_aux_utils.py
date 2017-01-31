@@ -512,6 +512,47 @@ class MT19937:
         """Forces a new internal state."""
         self._mt = mt[:]
 
+# Stream Cipher using MT19937 RNG.
+class MT19937StreamCipher:
+    """Stream Cipher using MT19937 RNG."""
+
+    def __init__(self, key):
+        self._key = key
+        self._rng = MT19937(self._key)
+        self._ks_bytes = b''
+
+    def encrypt(self, plaintext):
+        """Encrypt function (decrypt is the same)."""
+        pt = plaintext
+        if len(pt) == 0:
+            return b''
+
+        # For the keystream 'ks', start with any remaining unused bytes
+        # from last encrypt/decrypt operation.
+        ks = self._ks_bytes
+        # Generate new keystream blocks for covering the required
+        # plaintext.
+        while len(ks) < len(pt):
+            # Prepare a new key block and append it to keystream.
+            kb = self._rng.uint32().to_bytes(4, 'little')
+            ks += kb
+
+        # Adjust keystream to match plaintext size, while keeping any
+        # exceeding bytes for next encrypt/decrypt operation.
+        if len(ks) > len(pt):
+            self._ks_bytes = ks[len(pt):]
+            ks = ks[:len(pt)]
+
+        # Finally, do the XOR between the plaintext and keystream.
+        ct = strxor(pt, ks)
+
+        return ct
+
+    def decrypt(self, ciphertext):
+        """Decrypt function."""
+        # Encrypt and Decrypt use the same process!
+        return self.encrypt(ciphertext)
+
 # Python dictionary with an English letters statistical frequency.
 # Data from: https://en.wikipedia.org/wiki/Letter_frequency.
 # Space frequency added.
