@@ -67,7 +67,7 @@ def decryption_oracle(ct_b):
 
     return pt_b
 
-def execute_cbc_bitflip_atack(s):
+def execute_cbc_bitflip_attack(s):
     """Perform a CBC bitflip attack, so that a string appears in the plaintext."""
 
     # Attack relies on the fact that a 1 bit error in a ciphertext
@@ -159,7 +159,7 @@ if __name__ == '__main__':
     try:
         me = sys.argv[0]
         in_str = ";admin=true;"
-        (pt_attacked, found) = execute_cbc_bitflip_atack(in_str)
+        (pt_attacked, found) = execute_cbc_bitflip_attack(in_str)
         print("{0}: ".format(me) + "-" * 60)
         print("{0}: {1}".format(me, title))
         print("{0}: ".format(me) + "-" * 60)
