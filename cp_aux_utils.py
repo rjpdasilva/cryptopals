@@ -644,9 +644,9 @@ class SHA1 (object):
         return bytes(int(hexdigest[i * 2:i * 2 + 2], 16)
                 for i in range(len(hexdigest) // 2))
 
-# Do an HMAC using SHA-1 with the given key and message.
-def hmac_sha1(key, msg):
-    """Provide an HMAC of 'msg' using the given 'key'."""
+# Do an MAC using SHA-1 with the given key and message.
+def mac_sha1(key, msg):
+    """Provide an MAC of 'msg' using the given 'key'."""
 
     message = key + msg
     sha1 = SHA1(message)

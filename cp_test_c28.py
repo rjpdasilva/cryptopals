@@ -23,9 +23,9 @@ def execute_test_sha1(msg):
         key_b = utils.rand_bytes(key_sz)
 
     # Get the SHA-1 without the key.
-    sha1_b_nokey = utils.hmac_sha1(b'', msg_b)
+    sha1_b_nokey = utils.mac_sha1(b'', msg_b)
     # Get the SHA-1 with the key.
-    sha1_b_key = utils.hmac_sha1(key_b, msg_b)
+    sha1_b_key = utils.mac_sha1(key_b, msg_b)
 
     sha1_nokey = utils.bytes2hexstr(sha1_b_nokey)
     sha1_key = utils.bytes2hexstr(sha1_b_key)
