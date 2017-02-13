@@ -577,25 +577,24 @@ class MT19937StreamCipher:
 # THE SOFTWARE.
 
 # A SHA-1 pure python implementation.
-class SHA1 (object):
-
-    _h0, _h1, _h2, _h3, _h4, = (
-            0x67452301, 0xefcdab89, 0x98badcfe, 0x10325476, 0xc3d2e1f0)
+class SHA1:
+    _h0 = 0x67452301
+    _h1 = 0xefcdab89
+    _h2 = 0x98badcfe
+    _h3 = 0x10325476
+    _h4 = 0xc3d2e1f0
 
     def __init__(self, message):
         length = bin(len(message) * 8)[2:].rjust(64, "0")
         while len(message) > 64:
-            self._handle(''.join(bin(i)[2:].rjust(8, "0")
-                for i in message[:64]))
+            self._handle(''.join(bin(i)[2:].rjust(8, "0") for i in message[:64]))
             message = message[64:]
         message = ''.join(bin(i)[2:].rjust(8, "0") for i in message) + "1"
         message += "0" * ((448 - len(message) % 512) % 512) + length
         for i in range(len(message) // 512):
             self._handle(message[i * 512:i * 512 + 512])
 
-
     def _handle(self, chunk):
-
         lrot = lambda x, n: (x << n) | (x >> (32 - n))
         w = []
 
@@ -603,17 +602,15 @@ class SHA1 (object):
             w.append(int(chunk[j * 32:j * 32 + 32], 2))
 
         for i in range(16, 80):
-            w.append(lrot(w[i - 3] ^ w[i - 8] ^ w[i - 14] ^ w[i - 16], 1)
-                    & 0xffffffff)
+            w.append(lrot(w[i - 3] ^ w[i - 8] ^ w[i - 14] ^ w[i - 16], 1) & 0xffffffff)
 
-            a = self._h0
+        a = self._h0
         b = self._h1
         c = self._h2
         d = self._h3
         e = self._h4
 
         for i in range(80):
-
             if i <= i <= 19:
                 f, k = d ^ (b & (c ^ d)), 0x5a827999
             elif 20 <= i <= 39:
@@ -622,7 +619,6 @@ class SHA1 (object):
                 f, k = (b & c) | (d & (b | c)), 0x8f1bbcdc
             elif 60 <= i <= 79:
                 f, k = b ^ c ^ d, 0xca62c1d6
-
             temp = lrot(a, 5) + f + e + k + w[i] & 0xffffffff
             a, b, c, d, e = temp, a, lrot(b, 30), c, d
 
@@ -641,8 +637,7 @@ class SHA1 (object):
 
     def digest(self):
         hexdigest = self.hexdigest()
-        return bytes(int(hexdigest[i * 2:i * 2 + 2], 16)
-                for i in range(len(hexdigest) // 2))
+        return bytes(int(hexdigest[i * 2:i * 2 + 2], 16) for i in range(len(hexdigest) // 2))
 
 # Do an MAC using SHA-1 with the given key and message.
 def mac_sha1(key, msg):
