@@ -640,7 +640,7 @@ class SHA1:
         return bytes(int(hexdigest[i * 2:i * 2 + 2], 16) for i in range(len(hexdigest) // 2))
 
 # Do an MAC using SHA-1 with the given key and message.
-def mac_sha1(key, msg):
+def sha1_mac(key, msg):
     """Provide an MAC of 'msg' using the given 'key'."""
 
     message = key + msg
