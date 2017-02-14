@@ -577,6 +577,7 @@ class MT19937StreamCipher:
 # THE SOFTWARE.
 
 # A SHA-1 pure python implementation.
+# Some modifications were made to fit the challenges' purposes.
 class SHA1:
     _h0 = 0x67452301
     _h1 = 0xefcdab89
@@ -584,13 +585,29 @@ class SHA1:
     _h3 = 0x10325476
     _h4 = 0xc3d2e1f0
 
-    def __init__(self, message):
-        length = bin(len(message) * 8)[2:].rjust(64, "0")
+    def __init__(self, message, h = [_h0, _h1, _h2, _h3, _h4], length = None):
+        # Check if an initial state was given (h and length)
+        self._h0 = h[0]
+        self._h1 = h[1]
+        self._h2 = h[2]
+        self._h3 = h[3]
+        self._h4 = h[4]
+        if length is None:
+            length = len(message)
+
+        # Get the bit length.
+        length = bin(length * 8)[2:].rjust(64, "0")
+
+        # Update the SHA.
         while len(message) > 64:
             self._handle(''.join(bin(i)[2:].rjust(8, "0") for i in message[:64]))
             message = message[64:]
+
+        # Deal with padding.
         message = ''.join(bin(i)[2:].rjust(8, "0") for i in message) + "1"
         message += "0" * ((448 - len(message) % 512) % 512) + length
+
+        # Update the SHA (final).
         for i in range(len(message) // 512):
             self._handle(message[i * 512:i * 512 + 512])
 
@@ -647,6 +664,13 @@ def sha1_mac(key, msg):
     sha1 = SHA1(message)
 
     return sha1.digest()
+
+def sha1_pad(msg):
+    l = len(msg) * 8
+    msg += b'\x80'
+    msg += b'\x00' * ((56 - (len(msg) % 64)) % 64)
+    msg += l.to_bytes(8, 'big')
+    return msg
 
 
 # Python dictionary with an English letters statistical frequency.
