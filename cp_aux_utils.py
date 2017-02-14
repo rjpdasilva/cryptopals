@@ -656,7 +656,7 @@ class SHA1:
         hexdigest = self.hexdigest()
         return bytes(int(hexdigest[i * 2:i * 2 + 2], 16) for i in range(len(hexdigest) // 2))
 
-# Do an MAC using SHA-1 with the given key and message.
+# Do a MAC using SHA-1 with the given key and message.
 def sha1_mac(key, msg):
     """Provide an MAC of 'msg' using the given 'key'."""
 
@@ -665,6 +665,7 @@ def sha1_mac(key, msg):
 
     return sha1.digest()
 
+# Perform SHA-1 message padding.
 def sha1_pad(msg):
     l = len(msg) * 8
     msg += b'\x80'
