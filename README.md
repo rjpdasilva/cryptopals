@@ -12,9 +12,13 @@ A Python 3 installation is required for running the samples.
 
 The following core modules are used by the implementation:
 * `base64`
+* `http.server`
 * `string`
+* `struct`
 * `sys`
 * `time`
+* `urllib.parse`
+* `urllib.request`
 
 Besides the core modules that are part of the Python installation, the following
 additional modules (and respective package install command) are required:
@@ -31,19 +35,28 @@ For example:
 
 For running a challenge:
 * Use a shell placed on the challenge scripts folder.
-* Call python with the challenge script:
-```
-python cp_test_c<nn>.py
-```
-* Example: `python cp_test_c12.py`
+* Call python with the challenge script:<br>
+`python cp_test_c<nn>.py`
+* Example:<br>
+`python cp_test_c12.py`
 
 Notes:
-* The challenge scripts require no parameters.
+* In general, the challenges' scripts require no arguments, but, in some cases, arguments may be
+required (e.g. `cp_test_c31.py`), in which case the required arguments will be described when
+running it without any arguments.
+* Some scripts require user input and/or interaction. This will be noticeable when running these
+scripts.
+* Some challenges require a server to be run before executing the actual test script. This is the
+case of `cp_test_c31.py`, where the server script is `cp_test_c31_server.py`. This naming scheme is
+used for all challenges with a client and server.
 * Challenge specific data is presented to the user.
 * The final challenge test result is presented in the end.
-* Some scripts require user input and/or interaction.
+
+## Examples
 
 Below are some examples of running the challenges.
+
+### No arguments required, no user interaction required
 
 ```
 $ python cp_test_c03.py
@@ -57,6 +70,8 @@ cp_test_c03.py: ------------------------------------------------------------
 cp_test_c03.py: TEST     = [OK]
 cp_test_c03.py: ------------------------------------------------------------
 ```
+
+### No arguments required, user interaction required (entering number of loops)
 
 ```
 $ python cp_test_c11.py
@@ -74,5 +89,48 @@ cp_test_c11.py:   ko     = [    0] (  0.00%)
 cp_test_c11.py: ------------------------------------------------------------
 cp_test_c11.py: TEST     = [OK]
 cp_test_c11.py: ------------------------------------------------------------
+```
+
+### With server and client scripts, argument required for client
+
+This is required, e.g., for Challenge 31.
+
+Starting the server:
+```
+$ python cp_test_c31_server.py
+cp_test_c31_server.py: ------------------------------------------------------------
+cp_test_c31_server.py: Challenge 31: Implement and break HMAC-SHA1 with an artificial timing leak: Server
+cp_test_c31_server.py: ------------------------------------------------------------
+cp_test_c31_server.py: server_addr   = [localhost]
+cp_test_c31_server.py: server_port   = [9000]
+cp_test_c31_server.py: server_delay  = [50 ms]
+cp_test_c31_server.py: ------------------------------------------------------------
+cp_test_c31_server.py: Running server...
+cp_test_c31_server.py: (Ctrl+C to abort)
+cp_test_c31_server.py: ------------------------------------------------------------
+```
+
+Running the client, which needs one argument specifying the file name:
+```
+$ python cp_test_c31.py
+cp_test_c31.py: Error: Missing <file_name> arg
+cp_test_c31.py: usage: cp_test_c31.py <file_name>
+
+$ python cp_test_c31.py somefile.txt
+cp_test_c31.py: ------------------------------------------------------------
+cp_test_c31.py: Challenge 31: Implement and break HMAC-SHA1 with an artificial timing leak
+cp_test_c31.py: ------------------------------------------------------------
+cp_test_c31.py: file_name     = [somefile.txt]
+cp_test_c31.py: server_addr   = [localhost]
+cp_test_c31.py: server_port   = [9000]
+cp_test_c31.py: server_delay  = [50 ms]
+cp_test_c31.py: ------------------------------------------------------------
+cp_test_c31.py: Breaking...
+cp_test_c31.py: ------------------------------------------------------------
+Guessing byte 00 (dmin=  50.0)...done: v=d7, d=  52.3
+(sig-KO) d7
+Guessing byte 01 (dmin= 100.0)...done: v=1c, d= 103.0
+(sig-KO) d71c
+Guessing byte 02 (dmin= 150.0)...
 ```
 
