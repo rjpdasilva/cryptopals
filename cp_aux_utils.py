@@ -6,6 +6,8 @@ from Crypto.Util.strxor import strxor
 from Crypto.Cipher import AES
 from Crypto.Random import random
 import struct
+import http.server
+import urllib.parse
 
 def hexstr2bytes(s):
     """Convert an hex string to a byte array."""
@@ -674,6 +676,27 @@ def sha1_pad(msg):
     msg += l.to_bytes(8, 'big')
     return msg
 
+# Perform a HMAC-SHA1.
+# Based on the pseudocode from:
+#  https://en.wikipedia.org/wiki/Hash-based_message_authentication_code
+def sha1_hmac(key, msg):
+    """Perform a HMAC-SHA1 on the given message using the provided key."""
+    blk_sz = 64
+
+    if len(key) > blk_sz:
+        key = sha1_mac(b'', key)
+    if len(key) < blk_sz:
+        key += b'\x00' * (blk_sz - len(key))
+
+    o_key_pad = xor(key, b'\x5c')
+    i_key_pad = xor(key, b'\x36')
+
+    out = sha1_mac(i_key_pad, msg)
+    out = sha1_mac(o_key_pad, out)
+
+    return out
+
+
 # An pure python implementation for MD4.
 # https://gist.github.com/bonsaiviking/5644414.
 # Small adaptations made to fit the challenges' purposes.
@@ -758,6 +781,38 @@ def md4_pad(msg):
     msg += b'\x00' * ((56 - (len(msg) % 64)) % 64)
     msg += l.to_bytes(8, 'little')
     return msg
+
+
+# Simple HTTP request handler utility class.
+class CpHTTPServerReqHandler(http.server.BaseHTTPRequestHandler):
+    """Simple HTTP request handler utility class."""
+
+    def do_GET(self):
+        """Override for the GET method."""
+        # Do some pre-parsing.
+        result = urllib.parse.urlparse(self.path)
+        self.req_path = result.path
+        self.req_qs = urllib.parse.parse_qs(result.query)
+        # Defer to the registered GET handler.
+        fn_get = self.server.fn_get_get()
+        if fn_get is None:
+            self.send_error(500, "No GET request handler registered")
+        err, msg = fn_get(self)
+        self.send_error(err, msg)
+
+# Simple HTTP server utility class.
+class CpHTTPServer(http.server.HTTPServer):
+    """Simple HTTP server utility class."""
+
+    def __init__(self, addr = '', port = 9000, fn_get = None):
+        """The constructor."""
+        self._addr = (addr, port)
+        self._fn_get = fn_get
+        super().__init__(self._addr, CpHTTPServerReqHandler)
+
+    def fn_get_get(self):
+        """Gets the registered GET handler."""
+        return self._fn_get
 
 
 # Python dictionary with an English letters statistical frequency.
