@@ -132,7 +132,7 @@ if __name__ == '__main__':
         print("{0}: ".format(me) + "-" * 60)
         print("{0}: success       = [{1}]".format(me, ok))
         print("{0}: message       = [{1}]".format(me, msg))
-        print("{0}: signature     = [{1}]".format(me, sig_broken))
+        print("{0}: signature     = [{1}]".format(me, sig_broken.hex()))
         if not ok:
             err_str = "\n{0}: ".format(me) + "-" * 60
             err_str += "\n{0}: TEST          = [FAILED] Result doesn't match expected.".format(me)
