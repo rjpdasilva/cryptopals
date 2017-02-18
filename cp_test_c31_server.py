@@ -138,9 +138,10 @@ def execute_server(addr, port):
     httpd = utils.CpHTTPServer(addr, port, http_req_get_handler)
     httpd.serve_forever()
 
-if __name__ == '__main__':
+def main(me, title, delay):
+    global server_delay
+    server_delay = delay
     try:
-        me = sys.argv[0]
         print("{0}: ".format(me) + "-" * 60)
         print("{0}: {1}".format(me, title))
         print("{0}: ".format(me) + "-" * 60)
@@ -173,5 +174,8 @@ if __name__ == '__main__':
         print("{0}: Caught UNEXPECTED EXCEPTION:".format(me))
         raise
 
+if __name__ == '__main__':
+    me = sys.argv[0]
+    main(me, title, server_delay)
     sys.exit(0)
 
