@@ -800,6 +800,10 @@ class CpHTTPServerReqHandler(http.server.BaseHTTPRequestHandler):
         err, msg = fn_get(self)
         self.send_error(err, msg)
 
+    def log_message(self, format, *args):
+        """Override the logger function."""
+        pass
+
 # Simple HTTP server utility class.
 class CpHTTPServer(http.server.HTTPServer):
     """Simple HTTP server utility class."""

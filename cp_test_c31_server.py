@@ -20,6 +20,19 @@ server_port = 9000
 # Delay used for each HMAC byte that is correct (ms).
 server_delay = 50
 
+# To keep track of last file being requested.
+last_file = None
+
+# Debug flag.
+debug = 0
+
+# Debug messages.
+def debug_msg(*args, **kwargs):
+    """Extra debug messages."""
+    if not debug:
+        return
+    print(*args, **kwargs)
+
 def sha1_hmac(msg_b):
     """Produces the HMAC-SHA1 authentication code as requested by the challenge."""
 
@@ -55,61 +68,67 @@ def insecure_compare(hmac1, hmac2, delay):
 def http_req_get_handler(r):
     """The handler called by 'CpHTTPServer' for GET requests."""
 
-    print()
-    print("http_req_get_handler: New req for path [{0}]".format(r.path))
+    global last_file
+
+    debug_msg()
+    debug_msg("http_req_get_handler: New req for path [{0}]".format(r.path))
 
     # The request must be for '/test' path.
     if r.req_path != "/test":
-        print("http_req_get_handler:   error: 500 (unknown path)")
-        print()
+        debug_msg("http_req_get_handler:   error: 500 (unknown path)")
+        debug_msg()
         return (500, "Invalid path: {0}".format(r.req_path))
 
     # Get the 'file' and 'signature' items from the request's
     # query string.
     q = r.req_qs
     if 'file' not in q:
-        print("http_req_get_handler:   error: 500 ('file' not in query string)")
-        print()
+        debug_msg("http_req_get_handler:   error: 500 ('file' not in query string)")
+        debug_msg()
         return (500, "Invalid query string: 'file' is missing")
     if 'signature' not in q:
-        print("http_req_get_handler:   error: 500 ('signature' not in query string)")
-        print()
+        debug_msg("http_req_get_handler:   error: 500 ('signature' not in query string)")
+        debug_msg()
         return (500, "Invalid query string: 'signature' is missing")
 
     file_name = q['file'][0]
     try:
         signature = utils.hexstr2bytes(q['signature'][0])
     except Exception:
-        print("http_req_get_handler:   error: 500 (signature syntax invalid)")
-        print()
+        debug_msg("http_req_get_handler:   error: 500 (signature syntax invalid)")
+        debug_msg()
         return (500, "Invalid signature syntax: {0}".format(q['signature'][0]))
 
-    print("http_req_get_handler:   file      = [{0}]".format(file_name))
-    print("http_req_get_handler:   signature = [{0}]".format(signature.hex()))
+    debug_msg("http_req_get_handler:   file      = [{0}]".format(file_name))
+    debug_msg("http_req_get_handler:   signature = [{0}]".format(signature.hex()))
 
     # Instead of actually hashing a file check it against the
     # 'signature' item from the query string, for simplification,
     # we're hashing the file name itself. Serves the same purpose
     # regarding the challenge's idea.
     hmac_real = sha1_hmac(utils.rawstr2bytes(file_name))
-    print("http_req_get_handler:   hmac_real = [{0}]".format(hmac_real.hex()))
+    debug_msg("http_req_get_handler:   hmac_real = [{0}]".format(hmac_real.hex()))
 
     if len(signature) != len(hmac_real):
-        print("http_req_get_handler:   error: 500 (signature length invalid)")
-        print()
+        debug_msg("http_req_get_handler:   error: 500 (signature length invalid)")
+        debug_msg()
         return (500, "Invalid signature length: len {0} is {1}. Must be {2}"
                 .format(signature.hex(), len(signature), len(hmac_real)))
 
+    if file_name != last_file:
+        print("http_req_get_handler: new file = [{0}], sig = [{1}]"
+                .format(file_name, hmac_real.hex()))
+        last_file = file_name
     # Do the 'insecure compare'.
     match = insecure_compare(hmac_real, signature, server_delay)
-    print("http_req_get_handler:   match     = [{0}]".format(match))
+    debug_msg("http_req_get_handler:   match     = [{0}]".format(match))
     if not match:
-        print("http_req_get_handler:   error: 500 (signature invalid)")
-        print()
+        debug_msg("http_req_get_handler:   error: 500 (signature invalid)")
+        debug_msg()
         return (500, "Invalid signature")
 
-    print("http_req_get_handler: success: 200 (signature valid)")
-    print()
+    debug_msg("http_req_get_handler: success: 200 (signature valid)")
+    debug_msg()
     return (200, "OK - Valid signature")
 
 def execute_server(addr, port):
