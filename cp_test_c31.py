@@ -105,8 +105,7 @@ def execute_break_hmac_sha1(file_name, addr, port, delay):
 
     return (True, sig_broken, "Signature was verified")
 
-if __name__ == '__main__':
-    me = sys.argv[0]
+def main(me, title, delay, break_fn):
     # This script needs one argument: The file name.
     if len(sys.argv) != 2:
         print("{0}: Error: Missing <file_name> arg".format(me))
@@ -121,12 +120,11 @@ if __name__ == '__main__':
         print("{0}: server_addr   = [{1}]"
                 .format(me, server_addr if server_addr != "" else "localhost"))
         print("{0}: server_port   = [{1}]".format(me, server_port))
-        print("{0}: server_delay  = [{1} ms]".format(me, server_delay))
+        print("{0}: server_delay  = [{1} ms]".format(me, delay))
         print("{0}: ".format(me) + "-" * 60)
         print("{0}: Breaking...".format(me))
         print("{0}: ".format(me) + "-" * 60)
-        (ok, sig_broken, msg) = execute_break_hmac_sha1(file_name,
-                                    server_addr, server_port, server_delay)
+        (ok, sig_broken, msg) = break_fn(file_name, server_addr, server_port, delay)
         print("{0}: ".format(me) + "-" * 60)
         print("{0}: Breaking...done".format(me))
         print("{0}: ".format(me) + "-" * 60)
@@ -150,5 +148,8 @@ if __name__ == '__main__':
         print("{0}: Caught UNEXPECTED EXCEPTION:".format(me))
         raise
 
+if __name__ == '__main__':
+    me = sys.argv[0]
+    main(me, title, server_delay, execute_break_hmac_sha1)
     sys.exit(0)
 
