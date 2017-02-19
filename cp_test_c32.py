@@ -97,8 +97,8 @@ def execute_break_hmac_sha1(file_name, addr, port, delay):
         # Make some checks on the current byte's delta average:
         #  + Must be >= than the sum of deltas for each known byte.
         #  + Most not be > than the sum of deltas for each known byte
-        #    plus the byte being guessed plus the next byte (safety
-        #    margin).
+        #    plus the byte being guessed plus the next 2 bytes (a
+        #    large safety margin).
         #  + The delay diff to the latest delta average must exceed
         #    the delay for one correct byte.
         if delta_avg < (l * delay):
@@ -108,10 +108,10 @@ def execute_break_hmac_sha1(file_name, addr, port, delay):
                 # Retry previous byte.
                 sig_broken = sig_broken[:-1]
                 continue
-        if delta_avg > ((l + 3) * delay):
+        if delta_avg > ((l + 4) * delay):
                 # Previous byte is not correct.
                 print("fail: v={0}, davg={1:7.3f} > {2} (2)"
-                        .format(v_b.hex(), delta_avg, (l + 3) * delay))
+                        .format(v_b.hex(), delta_avg, (l + 4) * delay))
                 # Retry previous byte.
                 sig_broken = sig_broken[:-1]
                 continue
@@ -134,13 +134,20 @@ def execute_break_hmac_sha1(file_name, addr, port, delay):
                     "sig-OK" if ok else "sig-KO", sig_broken.hex()))
         deltas_avg[l] = delta_avg
 
+        # Confirm the guessed signature is correct.
+        if len(sig_broken) == sig_size:
+            print("Confirming sig={0}...".format(sig_broken.hex()), end = '', flush = True)
+            (ok, delta) = c31.http_check_file_signature(file_name, sig_broken, addr, port)
+            print("done: {0}".format(ok))
+            if not ok:
+                # Retry last byte.
+                sig_broken = sig_broken[:-1]
+                continue
+            break
+
     # Confirm the guessed signature is correct.
-    print("Confirming sig={0}...".format(sig_broken.hex()), end = '', flush = True)
-    (ok, delta) = c31.http_check_file_signature(file_name, sig_broken, addr, port)
-    print("done: {0}".format(ok))
     if not ok:
         return (False, sig_broken, "Guessed signature is invalid")
-
     return (True, sig_broken, "Signature was verified")
 
 if __name__ == '__main__':
