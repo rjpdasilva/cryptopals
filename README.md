@@ -6,7 +6,14 @@ Coded in Python 3.
 
 ## Installation
 
-Get the implementation's git repo from `git@github.com:rjpdasilva/cryptopals.git`.
+Get the implementation's git repo from `git@github.com:rjpdasilva/cryptopals.git`.<br>
+The repo's directory structure is:
+```
+.               # Repo's root ('README.md').
+└─ src          # Challenge scripts.
+   ├─ data      # Data files (input data, expected results, etc.).
+   └─ utils     # Utility modules.
+```
 
 A Python 3 installation is required for running the samples.
 
@@ -27,14 +34,14 @@ additional modules (and respective package install command) are required:
 ## Usage
 
 Each challenge has a python script for running it, named `cp_test_c<nn>.py`,
-where `<nn>` is the challenge number.
+where `<nn>` is the challenge number. All the challenges' scripts are inside the `src/` folder.
 
 For example:
 * `cp_test_c06.py` is for Challenge 6.
 * `cp_test_c21.py` is for Challenge 21.
 
 For running a challenge:
-* Use a shell placed on the challenge scripts folder.
+* Use a shell placed on the challenge scripts folder (`src/`).
 * Call python with the challenge script:<br>
 `python cp_test_c<nn>.py`
 * Example:<br>
@@ -80,7 +87,7 @@ cp_test_c11.py: Challenge 11: An ECB/CBC detection oracle
 cp_test_c11.py: ------------------------------------------------------------
 Enter number of loops to execute (1 ~ 10000):
 2000
-cp_test_c11.py: in_file  = [data_c06_out.txt]
+cp_test_c11.py: in_file  = [data/data_c06_out.txt]
 cp_test_c11.py: loops    = [ 2000]
 cp_test_c11.py:   ECB    = [  982] ( 49.10%)
 cp_test_c11.py:   CBC    = [ 1018] ( 50.90%)
