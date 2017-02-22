@@ -819,6 +819,20 @@ class CpHTTPServer(http.server.HTTPServer):
         return self._fn_get
 
 
+# Generate a Diffie-Hellman public and private key.
+def dh_keys(p, g):
+    """Generate a Diffie-Hellman public and private key."""
+    sec = rand_int(0, p - 1)
+    pub = pow(g, sec, p)
+    return (sec, pub)
+
+# Generate a Diffie-Hellman session key.
+def dh_session_key(pub_other, sec_own, p):
+    """Generate a Diffie-Hellman session key."""
+    session_key = pow(pub_other, sec_own, p)
+    return session_key
+
+
 # Python dictionary with an English letters statistical frequency.
 # Data from: https://en.wikipedia.org/wiki/Letter_frequency.
 # Space frequency added.
