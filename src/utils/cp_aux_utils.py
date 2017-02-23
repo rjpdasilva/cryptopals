@@ -824,7 +824,7 @@ class CpHTTPServer(http.server.HTTPServer):
 # Generate a Diffie-Hellman public and private key.
 def dh_keys(p, g):
     """Generate a Diffie-Hellman public and private key."""
-    sec = rand_int(0, p - 1)
+    sec = rand_int(1, p - 1)
     pub = pow(g, sec, p)
     return (sec, pub)
 
