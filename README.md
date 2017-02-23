@@ -1,9 +1,21 @@
-# cryptopals
+# **cryptopals**
 
-Implementation of the [Cryptopals Matasano Crypto Challenges](http://cryptopals.com/).
-
+Implementation of the [Cryptopals Matasano Crypto Challenges](http://cryptopals.com/).<br>
 Coded in Python 3.
 
+
+## Table of Contents
+
+* [Installation](#installation)
+* [Usage](#usage)
+* [Examples](#examples)
+  * [No arguments required, no user interaction required](#examples1)
+  * [No arguments required, user interaction required](#examples2)
+  * [With server and client scripts, argument required for client](#examples3)
+  * [With server, client and MITM scripts, arguments required for all](#examples4)
+
+
+<a name="installation"></a>
 ## Installation
 
 Get the implementation's git repo from `git@github.com:rjpdasilva/cryptopals.git`.<br>
@@ -33,6 +45,8 @@ Besides the core modules that are part of the Python installation, the following
 additional modules (and respective package install command) are required:
 * `Crypto` (`pip install pycrypto`)
 
+
+<a name="usage"></a>
 ## Usage
 
 Each challenge has a python script for running it, named `cp_test_c<nn>.py`,
@@ -66,10 +80,14 @@ all client/server with MITM attack challenges.
 * Challenge specific data is presented to the user.
 * The final challenge test result is presented in the end.
 
+
+<a name="examples"></a>
 ## Examples
 
 Below are some examples of running the challenges.
 
+
+<a name="examples1"></a>
 ### No arguments required, no user interaction required
 
 ```
@@ -85,6 +103,8 @@ cp_test_c03.py: TEST     = [OK]
 cp_test_c03.py: ------------------------------------------------------------
 ```
 
+
+<a name="examples2"></a>
 ### No arguments required, user interaction required (entering number of loops)
 
 ```
@@ -105,6 +125,8 @@ cp_test_c11.py: TEST     = [OK]
 cp_test_c11.py: ------------------------------------------------------------
 ```
 
+
+<a name="examples3"></a>
 ### With server and client scripts, argument required for client
 
 This is required, e.g., for Challenge 31.
@@ -148,6 +170,8 @@ Guessing byte 01 (dmin= 100.0)...done: v=1c, d= 103.0
 Guessing byte 02 (dmin= 150.0)...
 ```
 
+
+<a name="examples4"></a>
 ### With server, client and MITM scripts, arguments required for all
 
 This is used, e.g., in Challenge 34.
