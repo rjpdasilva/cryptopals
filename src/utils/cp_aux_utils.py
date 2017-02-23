@@ -8,6 +8,8 @@ from Crypto.Random import random
 import struct
 import http.server
 import urllib.parse
+import socket
+import socketserver
 
 def hexstr2bytes(s):
     """Convert an hex string to a byte array."""
@@ -831,6 +833,71 @@ def dh_session_key(pub_other, sec_own, p):
     """Generate a Diffie-Hellman session key."""
     session_key = pow(pub_other, sec_own, p)
     return session_key
+
+# Simple Socket IO operations.
+class CpSocketIO:
+    def __init__(self, obj):
+        """The constructor: Sets the correct file handles to use depending on socket type."""
+        if isinstance(obj, socket.socket):
+            f = obj.makefile(mode = 'rwb', buffering = 0)
+            self._rfile = f
+            self._wfile = f
+        elif isinstance(obj, socketserver.StreamRequestHandler):
+            self._rfile = obj.rfile
+            self._wfile = obj.wfile
+        else:
+            raise Exception('CpSocketIO: Invalid Socket type')
+
+    def readline(self):
+        """Read one '\n' terminated line from the socket (strips the terminating newline)."""
+        return self._rfile.readline().strip()
+
+    def readnum(self):
+        """Read a number from the socket."""
+        return int(self.readline())
+
+    def readbytes(self):
+        """Read a base64 encoded byte string from the socket."""
+        return base64bytes2bytes(self.readline())
+
+    def writeline(self, line):
+        """Write one '\n' terminated line to the socket."""
+        self._wfile.write(line + b'\n')
+
+    def writenum(self, num):
+        """Write a number to the socket."""
+        self.writeline(str(num).encode('ascii'))
+
+    def writebytes(self, data):
+        """Write a byte string to the socket, encoded by base64."""
+        self.writeline(bytes2base64bytes(data))
+
+# Simple TCP server request handler utility class.
+class CpTCPServerReqHandler(socketserver.StreamRequestHandler):
+    """Simple TCP server request handler utility class."""
+
+    def handle(self):
+        """The main request handler."""
+        # Defer to the registered requests handler.
+        fn_handle = self.server.fn_handle_get()
+        if fn_handle is None:
+            return
+        fn_handle(self)
+
+# Simple TCP server utility class.
+class CpTCPServer(socketserver.TCPServer):
+    """Simple TCP server utility class."""
+
+    def __init__(self, addr = '', port = 9000, fn_handle = None):
+        """The constructor."""
+        self._addr = (addr, port)
+        self._fn_handle = fn_handle
+        self.allow_reuse_address = True
+        super().__init__(self._addr, CpTCPServerReqHandler)
+
+    def fn_handle_get(self):
+        """Gets the registered requests handler."""
+        return self._fn_handle
 
 
 # Python dictionary with an English letters statistical frequency.
