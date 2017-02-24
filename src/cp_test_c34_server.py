@@ -145,8 +145,13 @@ def execute_server(addr, port):
     """Run the server as required by the challenge."""
 
     # Create and run the TCP server.
-    tcpd = utils.CpTCPServer(addr, port, request_handler)
-    tcpd.serve_forever()
+    try:
+        tcpd = utils.CpTCPServer(addr, port, request_handler)
+        tcpd.serve_forever()
+    except OSError as os_err:
+        print("\nserver: OSError: ({0}, {1})".format(os_err.errno, os_err.strerror))
+    except Exception:
+        print("\nserver: Exception")
 
 def main(me, title):
     """Challenge's main executing function."""
