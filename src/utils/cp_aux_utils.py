@@ -10,6 +10,8 @@ import http.server
 import urllib.parse
 import socket
 import socketserver
+import hashlib
+import hmac
 
 def hexstr2bytes(s):
     """Convert an hex string to a byte array."""
@@ -697,6 +699,24 @@ def sha1_hmac(key, msg):
     out = sha1_mac(o_key_pad, out)
 
     return out
+
+# Do a MAC on the given message using SHA-256 and the given key.
+def sha256_mac(key, msg):
+    """Do a MAC on the given message using SHA-256 and the given key."""
+
+    m = key + msg
+    sha256 = hashlib.sha256(m)
+
+    return sha256.digest()
+
+# Do an HMAC-SHA256 on the given message using given key.
+def sha256_hmac(key, msg):
+    """Do an HMAC-SHA256 on the given message using given key."""
+
+    hmac_sha256 = hmac.new(key, digestmod = hashlib.sha256)
+    hmac_sha256.update(msg)
+
+    return hmac_sha256.digest()
 
 
 # An pure python implementation for MD4.

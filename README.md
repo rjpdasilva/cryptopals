@@ -31,6 +31,8 @@ A Python 3 installation is required for running the samples.
 
 The following core modules are used by the implementation:
 * `base64`
+* `hashlib`
+* `hmac`
 * `http.server`
 * `socket`
 * `socketserver`
