@@ -13,6 +13,7 @@ Coded in Python 3.
   * [No arguments required, user interaction required](#examples2)
   * [With server and client scripts, argument required for client](#examples3)
   * [With server, client and MITM scripts, arguments required for all](#examples4)
+  * [With client vs server/attacker scripts, arguments required for all](#example5)
 
 
 <a name="installation"></a>
@@ -29,6 +30,10 @@ The repo's directory structure is:
 
 A Python 3 installation is required for running the samples.
 
+Some scripts (e.g. `cp_test_c38_attacker.py`) require access to a dictionary "words" file under
+`/usr/share/dict/words`. Check with your distro how to install this file/package, if not installed
+already.
+
 The following core modules are used by the implementation:
 * `base64`
 * `hashlib`
@@ -39,6 +44,7 @@ The following core modules are used by the implementation:
 * `string`
 * `struct`
 * `sys`
+* `threading`
 * `time`
 * `urllib.parse`
 * `urllib.request`
@@ -79,6 +85,11 @@ be started before running the challenge's test script. For example, Challenge 34
 the `cp_test_c34.py` script, needs a real server `cp_test_c34_server.py` and the MITM server
 `cp_test_c34_mitm.py` scripts to be started before testing. This naming scheme is kept the same in
 all client/server with MITM attack challenges.
+* Some challenges (e.g. Challenge 38) have client (`cp_test_c38.py`), server
+(`cp_test_c38_server.py`) and attacker (`cp_test_c38_attacker.py`) scripts. In these cases, the
+client shall be run against either the server (a real server) or the attacker (an attacker
+impersonating the server). In either cases, the script acting as server must be ran first. This
+naming scheme is kept the same in all client vs server/attacker challenges.
 * Challenge specific data is presented to the user.
 * The final challenge test result is presented in the end.
 
@@ -225,7 +236,7 @@ cp_test_c34.py: Error: Missing arguments
 cp_test_c34.py: usage: cp_test_c34.py <server_addr> <server_port> '<msg_to_send>'
 
 
-> python cp_test_c34.py localhost 9001 'This is a test message for Challenge 34!!!'
+$ python cp_test_c34.py localhost 9001 'This is a test message for Challenge 34!!!'
 cp_test_c34.py: ------------------------------------------------------------
 cp_test_c34.py: Challenge 34: Implement a MITM key-fixing attack on Diffie-Hellman with parameter injection: Client
 cp_test_c34.py: ------------------------------------------------------------
@@ -251,7 +262,6 @@ cp_test_c34.py: ------------------------------------------------------------
 cp_test_c34.py: TEST        = [OK]
 cp_test_c34.py: ------------------------------------------------------------
 ```
-
 
 Starting the client to connect with MITM attacker on port 9000 (1st incorrectly without arguments,
 then correctly):
@@ -286,5 +296,85 @@ cp_test_c34.py: k           = [da39a3ee5e6b4b0d3255bfef95601890]
 cp_test_c34.py: ------------------------------------------------------------
 cp_test_c34.py: TEST        = [OK]
 cp_test_c34.py: ------------------------------------------------------------
+```
+
+<a name="example5"></a>
+### With client vs server/attacker scripts, arguments required for all
+
+This is used, e.g., in Challenge 38.
+
+Starting the server (1st incorrectly without arguments, then correctly):
+```
+$ python cp_test_c38_server.py
+cp_test_c38_server.py: Error: Missing arguments
+cp_test_c38_server.py: usage: cp_test_c38_server.py <server_addr> <server_port> '<user>' '<password>'
+
+$ python cp_test_c38_server.py localhost 9001 rjpdasilva mypass
+cp_test_c38_server.py: ------------------------------------------------------------
+cp_test_c38_server.py: Challenge 38: Offline dictionary attack on simplified SRP: Server
+cp_test_c38_server.py: ------------------------------------------------------------
+cp_test_c38_server.py: server_addr = [localhost]
+cp_test_c38_server.py: server_port = [9001]
+cp_test_c38_server.py: user        = [rjpdasilva]
+cp_test_c38_server.py: password    = [butter]
+cp_test_c38_server.py: ------------------------------------------------------------
+cp_test_c38_server.py: Running server...
+cp_test_c38_server.py: (Ctrl+C to abort)
+cp_test_c38_server.py: ------------------------------------------------------------
+```
+
+Starting the attacker (impersonating the server) instead of the server:
+```
+$ python cp_test_c38_attacker.py
+cp_test_c38_attacker.py: Error: Missing arguments
+cp_test_c38_attacker.py: usage: cp_test_c38_attacker.py <server_addr> <server_port>
+
+$ python cp_test_c38_attacker.py localhost 9001
+cp_test_c38_attacker.py: ------------------------------------------------------------
+cp_test_c38_attacker.py: Challenge 38: Offline dictionary attack on simplified SRP: Attacker
+cp_test_c38_attacker.py: ------------------------------------------------------------
+cp_test_c38_attacker.py: server_addr = [localhost]
+cp_test_c38_attacker.py: server_port = [9001]
+cp_test_c38_attacker.py: ------------------------------------------------------------
+cp_test_c38_attacker.py: Running server...
+cp_test_c38_attacker.py: (Ctrl+C to abort)
+cp_test_c38_attacker.py: ------------------------------------------------------------
+```
+
+Starting the client, connecting to either the attacker or the server, depending on which is running:
+```
+$ python cp_test_c38.py
+cp_test_c38.py: Error: Missing arguments
+cp_test_c38.py: usage: cp_test_c38.py <server_addr> <server_port> '<user>' '<password>'
+
+$ python cp_test_c38.py localhost 9001 rjpdasilva butter
+cp_test_c38.py: ------------------------------------------------------------
+cp_test_c38.py: Challenge 38: Offline dictionary attack on simplified SRP: Client
+cp_test_c38.py: ------------------------------------------------------------
+cp_test_c38.py: server_addr = [localhost]
+cp_test_c38.py: server_port = [9001]
+cp_test_c38.py: user        = [rjpdasilva]
+cp_test_c38.py: password    = [butter]
+cp_test_c38.py: ------------------------------------------------------------
+cp_test_c38.py: Executing...
+cp_test_c38.py: ------------------------------------------------------------
+cp_test_c38.py: ------------------------------------------------------------
+cp_test_c38.py: Executing...done
+cp_test_c38.py: ------------------------------------------------------------
+cp_test_c38.py: auth_msg    = [OK]
+cp_test_c38.py: success     = [True]
+cp_test_c38.py: N           = [2410312426921032588552076022197566074856950548502459942654116941958108831682612228890093858261341614673227141477904012196503648957050582631942730706805009223062734745341073406696246014589361659774041027169249453200378729434170325843778659198143763193776859869524088940195577346119843545301547043747207749969763750084308926339295559968882457872412993810129130294592999947926365264059284647209730384947211681434464714438488520940127459844288859336526896320919633919]
+cp_test_c38.py: g           = [2]
+cp_test_c38.py: k           = [3]
+cp_test_c38.py: a           = [251175953244944880708210168915670758342570697662878390645251180044711610098750402071208408522024962945466086272768243237074614968111742451562108433180045248400535352872936072779377462603320572153008364873659018737564863037036050440585377095661400075457944404618483400660200484205944562370370339879677095565222265096427424602261203345799059957712259526491430038315714385553557005705966044025331951340358308128089629064593485511540061977786398173305320785507510092]
+cp_test_c38.py: A           = [572953135103288934909262532328997350189897835205953133116616629578331827232046113237150364243618089464864449756270521037440077689231666667159551021486918047629005034469446011230621480553794096869610124493533144271196953413475421868149045241733256907109942998976918704991934092900373685065309603773809593928822507744709360610129023422564507133850407169034479528914067979564462667631233762689759987592602270405414552476653204204089925687540964613752621294286605489]
+cp_test_c38.py: salt        = [0]
+cp_test_c38.py: B           = [32]
+cp_test_c38.py: u           = [1]
+cp_test_c38.py: S           = [1331424059001788875953078456210702522375665590072244064163957786046104289498823395111736770084400151302507949400490082921728459182430756088950112819837955777416219021302465252274387564318681905231386104859561434065230301823368341319298919887423951466449974470785961028988665792891769293966298251990198972367482077899611158924055341850411842888282578177664497124956761582654687552140557838146265772681122926910153532622720188446123606631782268606787344888840327270]
+cp_test_c38.py: K           = [89a9c75cc554b5c9fbca006b97bb5bc1b9f663c03786d56df22241964d4a57ed]
+cp_test_c38.py: ------------------------------------------------------------
+cp_test_c38.py: TEST        = [OK]
+cp_test_c38.py: ------------------------------------------------------------
 ```
 
