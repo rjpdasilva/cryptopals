@@ -19,6 +19,11 @@ N_init = 0xffffffffffffffffc90fdaa22168c234c4c6628b80dc1cd129024e088a67cc74020bb
 g_init = 2
 k_init = 3
 
+# Forcing 'A' by argument.
+# 'None' means not forcing 'A'.
+# Any integer value 'n >= 0' means 'A = n * N', i.e., 'A' is a multiple of 'N'.
+forced_A_m = None
+
 # Debug flag.
 debug = 0
 
@@ -29,22 +34,31 @@ def debug_msg(*args, **kwargs):
         return
     print(*args, **kwargs)
 
-def usage(me, err_msg = None):
+def usage(me, allow_forced_A, err_msg = None):
     """Show script usage."""
     if err_msg != None:
         print(err_msg)
-    print("{0}: usage: {0} <server_addr> <server_port> '<user>' '<password>'".format(me))
+    print("{0}: usage: {0} <server_addr> <server_port> '<user>' '<password>'{1}"
+            .format(me, " [<forced_A_m>]" if allow_forced_A else ""))
 
-def get_args(me):
+def get_args(me, allow_forced_A):
     """Script argument parsing."""
 
     global server_addr
     global server_port
     global user
     global password
+    global forced_A_m
 
-    if len(sys.argv) != 5:
-        usage(me, "{0}: Error: Missing arguments".format(me))
+    if len(sys.argv) < 5:
+        usage(me, allow_forced_A, "{0}: Error: Missing arguments".format(me))
+        return False
+    if allow_forced_A:
+        max_args = 6
+    else:
+        max_args = 5
+    if len(sys.argv) > max_args:
+        usage(me, allow_forced_A, "{0}: Error: Too many arguments".format(me))
         return False
 
     server_addr = sys.argv[1]
@@ -52,20 +66,33 @@ def get_args(me):
     try:
         server_port = int(server_port)
     except:
-        usage(me, "{0}: Error: Invalid <server_port> value: {1}. Must be integer > 0"
+        usage(me, allow_forced_A, "{0}: Error: Invalid <server_port> value: {1}. Must be integer > 0"
                 .format(me, server_port))
         return False
     if server_port <= 0:
-        usage(me, "{0}: Error: Invalid <server_port> value: {1}. Must be integer > 0"
+        usage(me, allow_forced_A, "{0}: Error: Invalid <server_port> value: {1}. Must be integer > 0"
                 .format(me, server_port))
         return False
 
     user = sys.argv[3]
     password = sys.argv[4]
 
+    if allow_forced_A and len(sys.argv) == 6:
+        forced_A_m = sys.argv[5]
+        try:
+            forced_A_m = int(forced_A_m)
+        except:
+            usage(me, allow_forced_A, "{0}: Error: Invalid <forced_A_m> value: {1}. Must be integer >= 0"
+                    .format(me, forced_A_m))
+            return False
+        if forced_A_m < 0:
+            usage(me, allow_forced_A, "{0}: Error: Invalid <forced_A_m> value: {1}. Must be integer > 0"
+                    .format(me, forced_A_m))
+            return False
+
     return True
 
-def execute_client(addr, port, user, password, N, g, k):
+def execute_client(addr, port, user, password, N, g, k, fAm):
     """Execute the challenge's client protocol."""
 
     (a, A, salt, B, u, S, K, auth_msg) = \
@@ -75,7 +102,10 @@ def execute_client(addr, port, user, password, N, g, k):
     debug_msg("-" * 60)
     debug_msg("client: Generating DH keys...", end = '', flush = True)
     (a, A) = utils.dh_keys(N, g)
-    debug_msg("done:\n  a = [{0}]\n  A = [{1}]".format(a, A))
+    if fAm is not None:
+        A = fAm * N
+    debug_msg("done:\n  a  = [{0}]\n  {1} = [{2}]"
+            .format(a, "A " if fAm is None else "fAm", A))
 
     # Create the client socket, connect to server and execute
     # the protocol.
@@ -123,12 +153,22 @@ def execute_client(addr, port, user, password, N, g, k):
             #   2. Convert xH to integer x somehow (put 0x on hexdigest).
             #   3. Generate S = (B - k * g**x)**(a + u * x) % N.
             #   4. Generate K = SHA256(S).
-            debug_msg("client: Generating 'K'...", end = '', flush = True)
-            xH = utils.sha256_mac(b'', utils.rawstr2bytes(str(salt) + password))
-            x = int(xH.hex(), 16)
-            Sb = (B - k * pow(g, x, N))
-            Se = (a + u * x)
-            S = pow(Sb, Se, N)
+            debug_msg("-" * 60)
+            if fAm is None:
+                debug_msg("client: Generating 'K'...", end = '', flush = True)
+                xH = utils.sha256_mac(b'', utils.rawstr2bytes(str(salt) + password))
+                x = int(xH.hex(), 16)
+                Sb = (B - k * pow(g, x, N))
+                Se = (a + u * x)
+                S = pow(Sb, Se, N)
+            else:
+                debug_msg("client: Generating 'K' (with forced 'A')...", end = '', flush = True)
+                # When we force 'A' to be a multiple of 'N', we're forcing
+                # the server to always have 'S = 0', because it uses:
+                #   'S = (A * v**u) ** b % N',
+                # meaning that '(A * v**u) ** b' will always be a factor of 'N', so
+                # its modulus 'N' will always be zero!
+                S = 0
             K = utils.sha256_mac(b'', utils.rawstr2bytes(str(S)))
             debug_msg("done:")
             debug_msg("  S = [{0}]".format(S))
@@ -155,11 +195,11 @@ def execute_client(addr, port, user, password, N, g, k):
 
     return (N, g, k, a, A, salt, B, u, S, K, auth_msg)
 
-def main(me, title):
+def main(me, title, allow_forced_A):
     """Challenge's main executing function."""
 
     # This script needs arguments, so get them.
-    if not get_args(me):
+    if not get_args(me, allow_forced_A):
         sys.exit(1)
     try:
         print("{0}: ".format(me) + "-" * 60)
@@ -169,12 +209,15 @@ def main(me, title):
         print("{0}: server_port = [{1}]".format(me, server_port))
         print("{0}: user        = [{1}]".format(me, user))
         print("{0}: password    = [{1}]".format(me, password))
+        if allow_forced_A:
+            print("{0}: forced_A_m  = [{1}]".format(me, forced_A_m))
         print("{0}: ".format(me) + "-" * 60)
         print("{0}: Executing...".format(me))
         print("{0}: ".format(me) + "-" * 60)
         debug_msg("")
         (N, g, k, a, A, salt, B, u, S, K, auth_msg) = \
-                execute_client(server_addr, server_port, user, password, N_init, g_init, k_init)
+                execute_client(server_addr, server_port, user, password, N_init, g_init, k_init,
+                        forced_A_m)
         ok = (auth_msg == "OK")
         debug_msg("")
         print("{0}: ".format(me) + "-" * 60)
@@ -187,7 +230,10 @@ def main(me, title):
             print("{0}: g           = [{1}]".format(me, g))
             print("{0}: k           = [{1}]".format(me, k))
             print("{0}: a           = [{1}]".format(me, a))
-            print("{0}: A           = [{1}]".format(me, A))
+            if forced_A_m is None:
+                print("{0}: A           = [{1}]".format(me, A))
+            else:
+                print("{0}: forced_A    = [{1}]".format(me, A))
             print("{0}: salt        = [{1}]".format(me, salt))
             print("{0}: B           = [{1}]".format(me, B))
             print("{0}: u           = [{1}]".format(me, u))
@@ -212,6 +258,6 @@ def main(me, title):
 
 if __name__ == '__main__':
     me = sys.argv[0]
-    main(me, title)
+    main(me, title, False)
     sys.exit(0)
 
