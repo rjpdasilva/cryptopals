@@ -7,6 +7,7 @@ Coded in Python 3.
 ## Table of Contents
 
 * [Installation](#installation)
+* [License](#license)
 * [Usage](#usage)
 * [Examples](#examples)
   * [No arguments required, no user interaction required](#examples1)
@@ -22,7 +23,7 @@ Coded in Python 3.
 Get the implementation's git repo from `git@github.com:rjpdasilva/cryptopals.git`.<br>
 The repo's directory structure is:
 ```
-.               # Repo's root ('README.md').
+.               # Repo's root ('README.md', 'LICENSE.md').
 └─ src          # Challenge scripts.
    ├─ data      # Data files (input data, expected results, etc.).
    └─ utils     # Utility modules.
@@ -52,6 +53,12 @@ The following core modules are used by the implementation:
 Besides the core modules that are part of the Python installation, the following
 additional modules (and respective package install command) are required:
 * `Crypto` (`pip install pycrypto`)
+
+
+<a name="license"></a>
+## License
+
+Refer to the ['LICENSE.md'](LICENSE.md) file.
 
 
 <a name="usage"></a>
