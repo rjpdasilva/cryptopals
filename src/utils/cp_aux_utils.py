@@ -1062,6 +1062,17 @@ def rsa_num_decrypt(prv, c):
     return m
 
 
+# Calculates the 'n'th root of 'num'.
+def nth_root(num, n):
+    """Calculates the 'n'th root of 'num', using Newton's method."""
+    u, s = num, num + 1
+    while u < s:
+        s = u
+        t = ((n - 1) * s) + (num // pow(s, n - 1))
+        u = t // n
+    return s
+
+
 # Simple Socket IO operations.
 class CpSocketIO:
     def __init__(self, obj):
