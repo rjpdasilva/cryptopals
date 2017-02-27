@@ -873,6 +873,195 @@ def dh_session_key(pub_other, sec_own, p):
     session_key = pow(pub_other, sec_own, p)
     return session_key
 
+
+# RSA auxiliary: Extended Great Common Divisor.
+# Taken from: https://rosettacode.org/wiki/Modular_inverse#Python
+def extended_gcd(aa, bb):
+    lastremainder, remainder = abs(aa), abs(bb)
+    x, lastx, y, lasty = 0, 1, 1, 0
+    while remainder:
+        lastremainder, (quotient, remainder) = remainder, divmod(lastremainder, remainder)
+        x, lastx = lastx - quotient*x, x
+        y, lasty = lasty - quotient*y, y
+    return lastremainder, lastx * (-1 if aa < 0 else 1), lasty * (-1 if bb < 0 else 1)
+
+# RSA auxiliary: Modular Inverse.
+# Taken from: https://rosettacode.org/wiki/Modular_inverse#Python
+def invmod(a, m):
+    g, x, y = extended_gcd(a, m)
+    if g != 1:
+        raise ValueError
+    return x % m
+
+# RSA auxiliary: Miller-Rabin Primality Testing.
+# Implementing pseudo-code from:
+#   https://en.wikipedia.org/wiki/Miller%E2%80%93Rabin_primality_test
+# Inline comments refer to the pseudo-code steps.
+def rsa_miller_rabin_isprime(n, k):
+    """Tests if 'n' is a probable prime, using Rabin-Miller primality testing with 'k' witnesses."""
+
+    # Input 1: 'n', an odd integer > 3 to be tested for primality.
+    # Input 2: 'k', a parameter that determines the accuracy of the test.
+    # Output: False if 'n' is composite, otherwise True because it's probably prime.
+    assert n > 3
+    assert (n & 0x1) == 0x1
+
+    # Write (n − 1) as (2^r * d) with d odd by factoring powers of 2 from n − 1.
+    d = n - 1
+    r = 0
+    while d % 2 == 0:
+        d = d // 2
+        r += 1
+    assert (n - 1) == (2**r * d)
+
+    # WitnessLoop: repeat k times.
+    for _ in range(k):
+        # Pick a random integer a in the range [2, n − 2].
+        a = rand_int(2, n - 1)
+        # x = a^d mod n.
+        x = pow(a, d, n)
+        # If x = 1 or x = n − 1 then continue WitnessLoop.
+        # Note the 'x = n - 1' condition is checked in the
+        # following 'while' loop.
+        if x == 1:
+            continue
+        # Implementation of the "repeat r − 1 times:" loop.
+        # Note:
+        #  + "if x = n − 1 then continue WitnessLoop" is a stop condition
+        #    for going back to the outer loop. It's also a condition for
+        #    not performing this loop at all (see above).
+        #  + When this cycle reaches its end ("repeat r − 1 times") without
+        #    reaching any other stop condition, then we must return 'False'.
+        #    This is tracked using 'i'.
+        #  + Having reached 'x = 1' withing the cycle, also means that 'n'
+        #    is composite, so not a prime.
+        i = 0
+        while x != (n - 1):
+            if i == r - 1:
+                # It's composite, so not a prime!
+                return False
+            i = i + 1
+            x = pow(x, 2, n)
+            if x == 1:
+                # It's composite, so not a prime!
+                return False
+
+    # It's a probable prime!
+    return True
+
+# RSA auxiliary: Primality testing.
+def rsa_isprime(n):
+    """Tests if 'n' is a probable prime."""
+
+    # Basic test.
+    if n < 2:
+        return False
+
+    # Use a known prime table for the first primes:
+    #  + If 'n' belongs to the table then it is for sure a prime.
+    #  + If 'n' is a factor of any prime from the table, then it's for sure not a prime.
+    # This helps speeding up rejecting non-primes without having to go to the actual
+    # Miller-Rabin test.
+    low_prime_table = [2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, \
+            59, 61, 67, 71, 73, 79, 83, 89, 97, 101, 103, 107, 109, 113, 127, 131, \
+            137, 139, 149, 151, 157, 163, 167, 173, 179, 181, 191, 193, 197, 199, 211, 223, \
+            227, 229, 233, 239, 241, 251, 257, 263, 269, 271, 277, 281, 283, 293, 307, 311, \
+            313, 317, 331, 337, 347, 349, 353, 359, 367, 373, 379, 383, 389, 397, 401, 409, \
+            419, 421, 431, 433, 439, 443, 449, 457, 461, 463, 467, 479, 487, 491, 499, 503, \
+            509, 521, 523, 541, 547, 557, 563, 569, 571, 577, 587, 593, 599, 601, 607, 613, \
+            617, 619, 631, 641, 643, 647, 653, 659, 661, 673, 677, 683, 691, 701, 709, 719, \
+            727, 733, 739, 743, 751, 757, 761, 769, 773, 787, 797, 809, 811, 821, 823, 827, \
+            829, 839, 853, 857, 859, 863, 877, 881, 883, 887, 907, 911, 919, 929, 937, 941, \
+            947, 953, 967, 971, 977, 983, 991, 997]
+    if n in low_prime_table:
+        return True
+    for prime in low_prime_table:
+        if (n % prime) == 0:
+            return False
+
+    # Run Miller-Rabin primality test.
+    # Var 'k' represents the number of "witnesses" (rounds).
+    k = 7
+    return rsa_miller_rabin_isprime(n, k)
+
+# RSA auxiliary: Large prime number generator.
+def rsa_getprime(bitsize):
+    """Gets a random prime number of 'bitsize' bits."""
+
+    # Keep generating random numbers with 'bitsize' bits
+    # until we get a probable prime.
+    while True:
+        n = rand_int(2**(bitsize - 1), 2**(bitsize))
+        if rsa_isprime(n):
+            return n
+
+# RSA: Generate public/private key pair.
+def rsa_genkeys(bitsize):
+    """Generate public/private key pair of 'bitsize' bits."""
+
+    # 'bitsize' is for the 'n' ('p' * 'q')  modulus.
+    # 'p' and 'q' shall have roughly half that size.
+    pq_bits = (bitsize // 2)
+
+    # Use 'e' = 3.
+    e = 3
+
+    # Generate suitable 'p' and 'q' primes and 'n' with requested bit size.
+    n = 0
+    while n.bit_length() != bitsize:
+        # Neither '(p - 1)' nor '(q - 1)' should be a factor of 'e', because
+        # below we use 'd = invmod(e, et)' and 'et = (p - 1) * (q - 1)'.
+        p = rsa_getprime(pq_bits)
+        while (p - 1) % e == 0:
+            p = rsa_getprime(pq_bits)
+        q = rsa_getprime(pq_bits)
+        while q == p or (q - 1) % e == 0:
+            q = rsa_getprime(pq_bits)
+        n = p * q
+
+    # Private key.
+    et = (p - 1) * (q - 1)
+    d = invmod(e, et)
+    prv = (d, n)
+
+    # Public key.
+    pub = (e, n)
+
+    return (prv, pub)
+
+# RSA: Number encrypt.
+def rsa_num_encrypt(pub, m):
+    """RSA encrypt a number message using public key."""
+
+    # Get public key exponent and modulus.
+    (e, n) = pub
+
+    # Number 'm' must be in range for RSA encryption.
+    if m < 0 or m >= n:
+        raise ValueError("Message '" + str(m) + "': out of range for RSA encryption")
+
+    # Encrypt.
+    c = pow(m, e, n)
+
+    return c
+
+# RSA: Number decrypt.
+def rsa_num_decrypt(prv, c):
+    """RSA decrypt a cipher from a number message using private key."""
+
+    # Get public key exponent and modulus.
+    (d, n) = prv
+
+    # Number 'm' must be in range for RSA encryption.
+    if c < 0 or c >= n:
+        raise ValueError("Cipher '" + str(c) + "': out of range for RSA decryption")
+
+    # Decrypt.
+    m = pow(c, d, n)
+
+    return m
+
+
 # Simple Socket IO operations.
 class CpSocketIO:
     def __init__(self, obj):
