@@ -40,6 +40,7 @@ The following core modules are used by the implementation:
 * `hashlib`
 * `hmac`
 * `http.server`
+* `re`
 * `socket`
 * `socketserver`
 * `string`
