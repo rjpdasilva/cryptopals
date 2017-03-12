@@ -1062,6 +1062,137 @@ def rsa_num_decrypt(prv, c):
     return m
 
 
+# DSA: Generate parameters (p, q, g).
+# Implementing as described in:
+#  https://en.wikipedia.org/wiki/Digital_Signature_Algorithm
+def dsa_genparams(L, N):
+    """Generate DSA parameters (p, q, g) for the given (L, N)."""
+
+    def get_p(L, q):
+        # 'i' is the such that 'p - 1 = i * q' (or 'p = i * q + 1').
+        min_i = (2**(L - 1) + (q - 1)) // q
+        max_i = (2**L - 1) // q
+        # Keep trying random 'i' within the limits
+        # so that 'p = i * q + 1' is prime.
+        while True:
+            i = rand_int(min_i, max_i)
+            p = i * q + 1
+            if rsa_isprime(p):
+                return (p, i)
+
+    def get_g(p, i):
+        for h in range(2, p - 1):
+            g = pow(h, i, p)
+            if g != 1:
+                return g
+        raise Exception("dsa_genparams: get_g: Could not calculate 'g'")
+
+    # Choose an N-bit prime q.
+    q = rsa_getprime(N)
+
+    # Choose an L-bit prime modulus p such that p − 1 is a multiple of q.
+    # The 'i' returned is thee one used for 'p - 1 = i * q'.
+    (p, i) = get_p(L, q)
+
+    # Choose g, a number whose multiplicative order modulo p is q.
+    # This may be done by setting 'g = h^((p − 1)/q) mod p' for
+    # some arbitrary 'h (1 < h < p − 1)', and trying again with a
+    # different 'h' if the result comes out as 1.
+    # Note that '(p - 1)/q' is the 'i' returned from 'get_p()'.
+    g = get_g(p, i)
+
+    return (p, q, g)
+
+# DSA: Generate key pair.
+# Implementing as described in:
+#  https://en.wikipedia.org/wiki/Digital_Signature_Algorithm
+def dsa_genkeys(L, N, p = None, q = None, g = None):
+    """Generate DSA key pair."""
+
+    # Define the (p, q, g) params.
+    if p == None:
+        (p, q, g) = dsa_genparams(L, N)
+    else:
+        if q == None or g == None:
+            raise Exception("dsa_genkeys: 'q' or 'g' is None with 'p' != None")
+        params = (p, q, g)
+
+    # Choose a secret key x by some random method, where 0 < x < q.
+    x = rand_int(1, q - 1)
+
+    # Calculate the public key y = g^x mod p.
+    y = pow(g, x, p)
+
+    prv = x
+    pub = (p, q, g, y)
+    return (prv, pub)
+
+# DSA: Sign a hashed message (using a given 'k').
+# Implementing as described in:
+#  https://en.wikipedia.org/wiki/Digital_Signature_Algorithm
+def dsa_sign_k(h, prv, pub, k):
+    """Generate a DSA signature on the given hash, using info from the provided keys and 'k'."""
+
+    x = prv
+    (p, q, g, y) = pub
+
+    # Calculate r = (g^k mod p) mod q.
+    r = pow(g, k, p) % q
+    # In the unlikely case that r = 0, start again with a different random k.
+    if r == 0:
+        return None
+    # Calculate s = k^−1 * (H(m) + x * r) mod q.
+    s = (invmod(k, q) * (h + x * r)) % q
+    # In the unlikely case that s = 0, start again with a different random k.
+    if s == 0:
+        return None
+
+    # The signature is (r , s).
+    return (r, s)
+
+# DSA: Sign a hashed message.
+# Implementing as described in:
+#  https://en.wikipedia.org/wiki/Digital_Signature_Algorithm
+def dsa_sign(h, prv, pub):
+    """Generate a DSA signature on the given hash, using info from the provided keys."""
+
+    (_, q, _, _) = pub
+    while True:
+        # Generate a random per-message value k where 0 < k < q.
+        k = rand_int(1, q - 1)
+        print("k:", k)
+        sig = dsa_sign_k(h, prv, pub, k)
+        if sig != None:
+            return sig
+
+# DSA: Verify a signed hashed message.
+# Implementing as described in:
+#  https://en.wikipedia.org/wiki/Digital_Signature_Algorithm
+def dsa_verify(h, sig, pub):
+    """Verify signature on a hashed message."""
+
+    (r, s) = sig
+    (p, q, g, y) = pub
+
+    # Reject the signature if 0 < r < q or 0 < s < q is not satisfied.
+    if r <= 0 or r >= q:
+        return False
+    if s <= 0 or s >= q:
+        return False
+
+    # Calculate w = s^−1 mod q.
+    w = invmod(s, q)
+    # Calculate u1 = (H(m) * w) mod q.
+    u1 = (h * w) % q
+    # Calculate u2 = (r * w) mod q.
+    u2 = (r * w) % q
+    # Calculate v = ((g^u1 * y^u2) mod p) mod q.
+    v = ((pow(g, u1, p) * pow(y, u2, p)) % p) % q
+
+    # The signature is invalid unless v = r.
+    return v == r
+
+
 # Calculates the 'n'th root of 'num'.
 def nth_root(num, n):
     """Calculates the 'n'th root of 'num', using Newton's method."""
