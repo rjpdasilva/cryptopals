@@ -1160,7 +1160,6 @@ def dsa_sign(h, prv, pub):
     while True:
         # Generate a random per-message value k where 0 < k < q.
         k = rand_int(1, q - 1)
-        print("k:", k)
         sig = dsa_sign_k(h, prv, pub, k)
         if sig != None:
             return sig
