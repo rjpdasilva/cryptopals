@@ -223,11 +223,11 @@ So be friendly, a matter of life and death, just like a etch-a-sketch
         ok = (ok_h and ok_h_sig and ok_prv and ok_x_h and ok_sig)
         if not ok:
             err_str = "\n{0}: ".format(me) + "-" * 60
-            err_str += "\n{0}: TEST     = [FAILED] Result doesn't match expected.".format(me)
+            err_str += "\n{0}: TEST        = [FAILED] Result doesn't match expected.".format(me)
             err_str += "\n{0}: ".format(me) + "-" * 60
             raise Exception(err_str)
         print("{0}: ".format(me) + "-" * 60)
-        print("{0}: TEST     = [OK]".format(me))
+        print("{0}: TEST        = [OK]".format(me))
         print("{0}: ".format(me) + "-" * 60)
     except Exception:
         print("{0}: ".format(me) + "-" * 60)
