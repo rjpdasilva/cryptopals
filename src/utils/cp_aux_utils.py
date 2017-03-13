@@ -1130,7 +1130,7 @@ def dsa_genkeys(L, N, p = None, q = None, g = None):
 # DSA: Sign a hashed message (using a given 'k').
 # Implementing as described in:
 #  https://en.wikipedia.org/wiki/Digital_Signature_Algorithm
-def dsa_sign_k(h, prv, pub, k):
+def dsa_sign_k(h, prv, pub, k, strict = True):
     """Generate a DSA signature on the given hash, using info from the provided keys and 'k'."""
 
     x = prv
@@ -1139,12 +1139,12 @@ def dsa_sign_k(h, prv, pub, k):
     # Calculate r = (g^k mod p) mod q.
     r = pow(g, k, p) % q
     # In the unlikely case that r = 0, start again with a different random k.
-    if r == 0:
+    if strict and r == 0:
         return None
     # Calculate s = k^−1 * (H(m) + x * r) mod q.
     s = (invmod(k, q) * (h + x * r)) % q
     # In the unlikely case that s = 0, start again with a different random k.
-    if s == 0:
+    if strict and s == 0:
         return None
 
     # The signature is (r , s).
@@ -1153,30 +1153,30 @@ def dsa_sign_k(h, prv, pub, k):
 # DSA: Sign a hashed message.
 # Implementing as described in:
 #  https://en.wikipedia.org/wiki/Digital_Signature_Algorithm
-def dsa_sign(h, prv, pub):
+def dsa_sign(h, prv, pub, strict = True):
     """Generate a DSA signature on the given hash, using info from the provided keys."""
 
     (_, q, _, _) = pub
     while True:
         # Generate a random per-message value k where 0 < k < q.
         k = rand_int(1, q - 1)
-        sig = dsa_sign_k(h, prv, pub, k)
+        sig = dsa_sign_k(h, prv, pub, k, strict)
         if sig != None:
             return sig
 
 # DSA: Verify a signed hashed message.
 # Implementing as described in:
 #  https://en.wikipedia.org/wiki/Digital_Signature_Algorithm
-def dsa_verify(h, sig, pub):
+def dsa_verify(h, sig, pub, strict = True):
     """Verify signature on a hashed message."""
 
     (r, s) = sig
     (p, q, g, y) = pub
 
     # Reject the signature if 0 < r < q or 0 < s < q is not satisfied.
-    if r <= 0 or r >= q:
+    if strict and (r <= 0 or r >= q):
         return False
-    if s <= 0 or s >= q:
+    if strict and (s <= 0 or s >= q):
         return False
 
     # Calculate w = s^−1 mod q.
